@@ -1,0 +1,4 @@
+data/*
+scripts/output/*
+notebooks/output/*
+job_output/*
