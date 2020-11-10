@@ -26,11 +26,11 @@ def get_args():
 def main():
   args = get_args()
   print("z_col",args.z_col)
-  outpath = "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/significant_genes/"
+  outpath = "scripts/output/significant_genes/"
   suff = ""
   if args.unfilt:
     suff += "_unfilt"
-  df = pd.read_parquet("/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{}_sym_S_{}_z_{}_b_{}{}.pq".format(args.dataname,args.pinning_S, args.pinning_z,args.lower_bound, suff),columns=["free_annotation","tissue","compartment","geneR1A_uniq","z","cell","numReads", "cell_gene","scaled_z","scZ","n.g"])
+  df = pd.read_parquet("scripts/output/rijk_zscore/{}_sym_S_{}_z_{}_b_{}{}.pq".format(args.dataname,args.pinning_S, args.pinning_z,args.lower_bound, suff),columns=["free_annotation","tissue","compartment","geneR1A_uniq","z","cell","numReads", "cell_gene","scaled_z","scZ","n.g"])
 
 #  df["n.g"] = df["cell_gene"].map(df.groupby("cell_gene")["numReads"].sum())
 #  df["scaled_z"] = df["z"] / np.sqrt(df["n.g"])
@@ -120,8 +120,8 @@ def main():
   m_df.loc[(m_df["allp_mean"] < ep) | (m_df["allp_mean"] > 1 - ep), "diff_mean"] = True
 
   # add condensed freeannotation names
-  ann_df = pd.read_csv("/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/notebooks/output/condense_freeanns/TS_condense_freeanns.tsv",sep="\t")
-  ann_dict = pd.Series(ann_df.condensed_freeann.values,index=ann_df.free_annotation).to_dict()
+#  ann_df = pd.read_csv("notebooks/output/condense_freeanns/TS_condense_freeanns.tsv",sep="\t")
+#  ann_dict = pd.Series(ann_df.condensed_freeann.values,index=ann_df.free_annotation).to_dict()
 #  m_df["condensed_freeann"] = m_df["free_annotation"].map(ann_dict)
 #  m_df["is_stem"] = m_df[m_df["free_annotation"].str.contains("stem")]
 

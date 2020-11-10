@@ -47,16 +47,16 @@ def main():
   args = get_args()
   t0 = time.time()
 
-  in_path = "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/anova_zscore/"
+  in_path = "scripts/output/anova_zscore/"
   resid_suff = ""
   model_types = ["","_unweight"]
 
   for mt in model_types:
     out_cols = []
-    sig = pd.read_csv("/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/significant_genes/{}-scZ_allp{}.tsv".format(args.dataname,args.suffix),sep="\t")
+    sig = pd.read_csv("scripts/output/significant_genes/{}-scZ_allp{}.tsv".format(args.dataname,args.suffix),sep="\t")
     key_cols = list(sig["compartment"].unique()) #["Immune","Stromal","Epithelial","Endothelial"]
   
-    outpath = "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/final_FDRs_anova/"
+    outpath = "scripts/output/final_FDRs_anova/"
   #  all_datanames = ["TS_10x_redo","TSP2_10x_rerun_3prime","TSP1_SS2"]
   
   #  dn = "TS_10x_redo"

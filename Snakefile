@@ -113,8 +113,9 @@ def get_all_infiles(datasets):
 rule all:         
   input:
     get_rijk_zscores(datasets),
-#    get_sig(datasets, bounds),
-#    get_anova(datasets),
+    get_sig(datasets, bounds),
+    get_anova(datasets),
+    get_FDR(datasets)
 
 rule pq_to_tsv:
   input:
@@ -167,6 +168,30 @@ rule FDR_anova:
     python3.6 -u scripts/final_FDRs_anova.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
     python3.6 -u scripts/final_FDRs_anova_factor.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
 
+    """
+
+rule significance:
+  input:
+    "scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+
+  output:
+    "scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 40000,
+#    mem_mb=lambda wildcards, attempt: attempt * 120000,
+
+    time_min=lambda wildcards, attempt: attempt * 1 * 60
+  log:
+    out="job_output/significance_{dataset}_{pinS}_{pinz}_{bound}_{z_col}.out",
+    err="job_output/significance_{dataset}_{pinS}_{pinz}_{bound}_{z_col}.err"
+
+  params:
+    unfilt={True : "--unfilt", False : ""}[unfilt],
+    z_col=z_col
+
+  shell:
+    """
+    python3.6 -u scripts/significant_genes.py --dataname {wildcards.dataset} --z_col {params.z_col} --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --lower_bound {wildcards.bound}  {params.unfilt} 1>> {log.out} 2>> {log.err}
     """
 
 rule FDR_mz:

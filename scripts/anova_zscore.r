@@ -9,8 +9,8 @@ datanames <- args[2:length(args)]
 
 #datanames = c("TS_10x_redo_bestrefseq","TSP1_SS2_bestrefseq","TSP2_10x_rerun_3prime_bestrefseq")
 
-inpath <- '/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/significant_genes/'
-outpath <- '/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/anova_zscore/'
+inpath <- 'scripts/output/significant_genes/'
+outpath <- 'scripts/output/anova_zscore/'
 #suff <- '_unfilt'
 suff <- args[1]
 out_suff <- suff

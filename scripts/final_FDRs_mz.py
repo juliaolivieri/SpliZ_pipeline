@@ -38,8 +38,8 @@ def calc_FDR_mz(q,mz, pre_dfs,p, datanames):
 def main():
   t0 = time.time()
   args = get_args()
-  in_path = "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/significant_genes/"
-  outpath = "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/final_FDRs_mz/"
+  in_path = "scripts/output/significant_genes/"
+  outpath = "scripts/output/final_FDRs_mz/"
 
   #[["TS_10x_redo","TSP2_10x_rerun_3prime","TSP1_SS2"],["TS_10x_redo_bestrefseq","TSP2_10x_rerun_3prime_bestrefseq","TSP1_SS2_bestrefseq"],["lemur_ss2","lemur_Antoine_4","lemur_Stumpy_4"]]
 #  all_datanames = ["TS_10x_redo","TSP2_10x_rerun_3prime","TSP1_SS2"]
