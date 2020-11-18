@@ -7,9 +7,12 @@ This pipeline takes the output from [SICILIAN](https://github.com/salzmanlab/SIC
 ![Pipeline](pipeline.png)
 
 
-## Installation
+## Installation and setup
 
-To run the pipeline, first set up the conda environment from the environment.yml file:
+Clone this repository:
+`git clone https://github.com/juliaolivieri/SZS_pipeline`
+
+Then set up the conda environment from the environment.yml file:
 
 `conda env create --name szs_env --file=environments.yml`
 
