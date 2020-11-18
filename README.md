@@ -2,6 +2,8 @@
 
 This repository contains code to perform the analyses in the paper ["The SZS is a robust and efficient method to identify regulated splicing events in droplet-based RNA Sequencing" (Olivieri, Dehghannasiri, and Salzman 2020)](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v1.abstract). 
 
+![Pipeline](pipeline.png)
+
 To run the pipeline, first set up the conda environment from the environment.yml file:
 
 `conda env create --name szs_env --file=environments.yml`
