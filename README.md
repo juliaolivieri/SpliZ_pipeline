@@ -16,7 +16,7 @@ Clone this repository:
 
 Then set up the conda environment from the environment.yml file:
 
-`conda env create --name szs_env --file=environments.yml`
+`conda create --name szs_env --file=environment.yml`
 
 and activate it:
 
