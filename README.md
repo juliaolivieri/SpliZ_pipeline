@@ -14,6 +14,8 @@ Clone this repository:
 
 `cd SZS_pipeline/`
 
+Ensure that conda is working on your system. If you are working on sherlock on the horence partition, you can try adding export PATH="/share/PI/horence/applications/anaconda3/bin/:$PATH"` to your .bashrc.
+
 Then set up the conda environment from the environment.yml file:
 
 `conda env create --name szs_env --file=environment.yml`
@@ -22,6 +24,8 @@ and activate it:
 
 ` source activate szs_env`
 
+If this activation step doesn't work, try running `conda env list` and looking for the path that ends with `szs_env`. Then run `source activate <full path>`, for example `source activate /share/PI/horence/applications/anaconda3/envs/szs_env`.
+
 You will need to place the following files in the "data" directory:
 * `HLCA4_P2_10x_with_postprocessing_lung.pq`
 * `HLCA4_P3_10x_with_postprocessing_lung.pq`
@@ -29,6 +33,16 @@ You will need to place the following files in the "data" directory:
 And the following files in the util_files directory:
 * `GRCh38_latest_genomic.gtf`
 * `ucscGenePfam.txt`
+
+If you are working on Sherlock with access to the horence partition, you can run 
+
+`cp /scratch/PI/horence/JuliaO/single_cell/SZS_pipeline/data/* data/`
+
+and
+
+`cp /scratch/PI/horence/JuliaO/single_cell/SZS_pipeline/util_files/* util_files/`
+
+to get these files.
 
 ## Running the pipeline
 
