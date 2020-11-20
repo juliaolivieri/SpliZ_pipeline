@@ -14,7 +14,7 @@ Clone this repository:
 
 `cd SZS_pipeline/`
 
-Ensure that conda is working on your system. If you are working on sherlock on the horence partition, you can try adding export PATH="/share/PI/horence/applications/anaconda3/bin/:$PATH"` to your .bashrc.
+Ensure that conda is working on your system. If you are working on sherlock on the horence partition, you can try adding `export PATH="/share/PI/horence/applications/anaconda3/bin/:$PATH"` to your .bashrc.
 
 Then set up the conda environment from the environment.yml file:
 
