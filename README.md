@@ -48,6 +48,8 @@ to get these files.
 
 Then run `snakemake -p` in the main directory (I run `snakemake -p --profile slurm` to run on sherlock). You can run `snakemake -np` first to see what jobs will be run.
 
+To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). If you are working on sherlock using the horence partition, you can try copying the folder `/scratch/PI/horence/JuliaO/snakemake` to `~/.config` by running `cp -r /scratch/PI/horence/JuliaO/snakemake ~/.config/` instead.
+
 ## References
 Olivieri, Dehghannasiri, and Salzman. "The SZS is an efficient statistical method to identify regulated splicing events in droplet-based RNA sequencing." bioRxiv. (2020) [https://www.biorxiv.org/content/10.1101/2020.11.10.377572v1.abstract](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v1.abstract).
 
