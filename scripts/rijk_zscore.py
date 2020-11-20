@@ -107,6 +107,7 @@ def normalize_Sijks(df,let):
   return df
 
 def main():
+  SVD = False
   let_dict = {"A" : "acc", "B" : "don"}
   t0 = time.time()
   args = get_args()
@@ -395,49 +396,53 @@ def main():
 
   ##### PERFORM SVD ZSCORE CALCULATION #####
 
-  letters = ["A","B"]
-  for let in letters:
-    df["zcontrib{}_rep".format(let)] = df["zcontrib" + let].fillna(0)
-    df["juncPosR1" + let] = df["juncPosR1" + let].astype(int).astype(str) + "_" + let
-
-  k = 3 # number of components to include
-  loads = {"f{}".format(i) : {} for i in range(k)}
-  zs = {"svd_z{}".format(i) : {} for i in range(k)}
-  
-  for gene, gene_df in tqdm(df.groupby("geneR1A_uniq")):
-    
-    # get zcontrib matrix
-    gene_mats = []
+  if SVD:
+    letters = ["A","B"]
     for let in letters:
-      gene_mat = gene_df.pivot_table(index="cell_gene",columns="juncPosR1{}".format(let),values="zcontrib{}_rep".format(let),fill_value=0)
-      gene_mats.append(gene_mat)
-    gene_mat = gene_mats[0].merge(gene_mats[1],on="cell_gene")
+      df["zcontrib{}_rep".format(let)] = df["zcontrib" + let].fillna(0)
+      df["juncPosR1" + let] = df["juncPosR1" + let].astype(int).astype(str) + "_" + let
+  
+    k = 3 # number of components to include
+    loads = {"f{}".format(i) : {} for i in range(k)}
+    zs = {"svd_z{}".format(i) : {} for i in range(k)}
     
-    # calculate svd
-    u, s, vh = np.linalg.svd(gene_mat)
-    
-    if len(s) >= k:
-      # calculate new z scores based on svd
-      new_zs = gene_mat.dot(np.transpose(vh[:k,:]))
-  
-      # calculate load on each component
-      load = np.square(s)/sum(np.square(s))
-  
-      # save new zs and fs in dictionaries to save later
-      for i in range(k):
-        loads["f{}".format(i)][gene] = load[i]
-        zs["svd_z{}".format(i)].update(pd.Series(new_zs[i].values,index=new_zs.index).to_dict())
-  
-      # save loadings
-      v_out = pd.DataFrame(vh,columns=gene_mat.columns)
-      v_out.to_csv("{}SVD/{}_{}_S_{}_z_{}_b_{}{}.tsv".format(outpath, gene,args.dataname, args.pinning_S, args.pinning_z, args.lower_bound, suff), index=False, sep = "\t")
+    for gene, gene_df in tqdm(df.groupby("geneR1A_uniq")):
       
-  for i in range(k):
-    df["f{}".format(i)] = df["geneR1A_uniq"].map(loads["f{}".format(i)])
-    df["svd_z{}".format(i)] = df["cell_gene"].map(zs["svd_z{}".format(i)])
-  df["svd_z_sumsq"] = (df[["svd_z{}".format(i) for i in range(k)]]**2).sum(axis=1)
+      # get zcontrib matrix
+      gene_mats = []
+      for let in letters:
+        gene_mat = gene_df.pivot_table(index="cell_gene",columns="juncPosR1{}".format(let),values="zcontrib{}_rep".format(let),fill_value=0)
+        gene_mats.append(gene_mat)
+      gene_mat = gene_mats[0].merge(gene_mats[1],on="cell_gene")
+      
+      # calculate svd
+      u, s, vh = np.linalg.svd(gene_mat)
+      
+      if len(s) >= k:
+        # calculate new z scores based on svd
+        new_zs = gene_mat.dot(np.transpose(vh[:k,:]))
+    
+        # calculate load on each component
+        load = np.square(s)/sum(np.square(s))
+    
+        # save new zs and fs in dictionaries to save later
+        for i in range(k):
+          loads["f{}".format(i)][gene] = load[i]
+          zs["svd_z{}".format(i)].update(pd.Series(new_zs[i].values,index=new_zs.index).to_dict())
+    
+        # save loadings
+        v_out = pd.DataFrame(vh,columns=gene_mat.columns)
+        v_out.to_csv("{}SVD/{}_{}_S_{}_z_{}_b_{}{}.tsv".format(outpath, gene,args.dataname, args.pinning_S, args.pinning_z, args.lower_bound, suff), index=False, sep = "\t")
+        
+    for i in range(k):
+      df["f{}".format(i)] = df["geneR1A_uniq"].map(loads["f{}".format(i)])
+      df["svd_z{}".format(i)] = df["cell_gene"].map(zs["svd_z{}".format(i)])
+    df["svd_z_sumsq"] = (df[["svd_z{}".format(i) for i in range(k)]]**2).sum(axis=1)
 
-  sub_cols = ["cell","geneR1A_uniq","tissue","compartment","free_annotation","ontology","scZ","svd_z_sumsq","n.g_A","n.g_B"] + ["f{}".format(i) for i in range(k)] + ["svd_z{}".format(i) for i in range(k)]
+    sub_cols = ["cell","geneR1A_uniq","tissue","compartment","free_annotation","ontology","scZ","svd_z_sumsq","n.g_A","n.g_B"] + ["f{}".format(i) for i in range(k)] + ["svd_z{}".format(i) for i in range(k)]
+  else:
+    sub_cols = ["cell","geneR1A_uniq","tissue","compartment","free_annotation","ontology","scZ","n.g_A","n.g_B"] 
+
   df.drop_duplicates("cell_gene")[sub_cols].to_csv("{}{}_sym_S_{}_z_{}_b_{}{}_subcol.tsv".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff),index=False,sep="\t")
   df.to_parquet("{}{}_sym_S_{}_z_{}_b_{}{}.pq".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff))
 
