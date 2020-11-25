@@ -50,7 +50,7 @@ Then run `snakemake -p` in the main directory (I run `snakemake -p --profile slu
 
 The terminal window you submit from will not be available again until after the full pipeline runs. You can use tmux to subset your termianl pane so that snakemake is only running in one box (this also allows you to detatch the session so it continues running even when terminal isn't open). For the tmux approach you will have to always log in to the same node on sherlock so you can reconnect to the same session (for example, `ssh jolivier@sh02-ln04.stanford.edu`). 
 
-The pipeline should take around <time estimate> to run.
+The pipeline should take around one hour to run.
 
 To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). If you are working on sherlock using the horence partition, you can try copying the folder `/scratch/PI/horence/JuliaO/snakemake` to `~/.config` by running `cp -r /scratch/PI/horence/JuliaO/snakemake ~/.config/` instead. You can then edit `~/.config/snakemake/slurm/slurm-submit.py` to change the `SBATCH_DEFAULTS` variable if you want (the current defaults are to use the partitions owners and horence, 10 minutes of time, and 4Gb of memory). All of the time and memory requirements for the SZS pipeline are specified in the script itself, so you don't need to change these variables if you're only running this pipeline.
 
