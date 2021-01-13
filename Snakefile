@@ -243,7 +243,6 @@ rule anova:
 
   shell:
     """
-    ml load R
     Rscript scripts/anova_zscore.r  {params.suffix} {wildcards.dataset} 1>> {log.out}  2>> {log.err}
     Rscript scripts/anova_factor.r  {params.suffix} {wildcards.dataset} 1>> {log.out}  2>> {log.err}
 
