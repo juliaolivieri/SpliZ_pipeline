@@ -1,8 +1,10 @@
 
 datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"]}
 
+
 # filter by SICILIAN v2
 ver = "--v2"
+
 all_groups = {
               "HLCA4_P2_10x_with_postprocessing_lung" : ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"],
               "HLCA4_P3_10x_with_postprocessing_lung" : ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"]
@@ -45,6 +47,16 @@ def get_FDR(datasets):
           out.append("scripts/output/final_FDRs_mz/{}_FDR_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
           out.append("scripts/output/final_FDRs_anova/{}_FDR_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
 #          pass
+
+  return out
+
+def get_SVD(datasets):
+  out = []
+  for b in bounds:
+    for pin_S in pins_S:
+      for pin_z in pins_z:
+        for dataset in datasets.keys():
+          out.append("scripts/output/rijk_zscore/{}_sym_SVD_normgene_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
 
   return out
 
@@ -109,13 +121,35 @@ def get_all_infiles(datasets):
     elif datasets[dataset][0] == "ss2":
       outputs.append("data/{}.pq".format(dataset))
   return outputs
-
+print(get_SVD(datasets))
 rule all:         
   input:
     get_rijk_zscores(datasets),
+    get_SVD(datasets),
     get_sig(datasets, bounds),
     get_anova(datasets),
     get_FDR(datasets)
+#
+rule pq_to_tsv_SVD:
+  input:
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normgene_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+
+  output:
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normgene_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 40000,
+#    mem_mb=lambda wildcards, attempt: attempt * 120000,
+
+    time_min=lambda wildcards, attempt: attempt * 60
+  log:
+    out="job_output/pq2tsv_{dataset}_{pinS}_{pinz}_{bound}.out",
+    err="job_output/pq2tsv_{dataset}_{pinS}_{pinz}_{bound}.err"
+
+  shell:
+    """
+    python3.6 -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
+    """
 
 rule pq_to_tsv:
   input:
@@ -275,3 +309,29 @@ rule rijk_zscore:
     python3.6 -u scripts/rijk_zscore.py {params.ver} --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset} --parquet {input} --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
     """
 
+rule SVD_zscore:
+  input:
+    "scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+
+  output:
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normgene_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+#    "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}.pq"
+  resources:
+#    mem_mb=lambda wildcards, attempt: attempt * 750000,
+    mem_mb=lambda wildcards, attempt: attempt * 120000,
+
+    time_min=lambda wildcards, attempt: attempt * 60 * 24
+  log:
+    out="job_output/SVD_zscore_{dataset}_{pinS}_{pinz}_{bound}.out",
+    err="job_output/SVD_zscore_{dataset}_{pinS}_{pinz}_{bound}.err"
+
+  params:
+    verbose=verbose,
+    light={True : "--light", False : ""}[light],
+    unfilt={True : "--unfilt", False : ""}[unfilt],
+    ver = ver
+
+  shell:
+    """
+    python3.6 -u scripts/SVD_zscore.py {params.ver} --svd_type normgene --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset}  --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
+    """

@@ -54,6 +54,10 @@ The pipeline should take around one hour to run.
 
 To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). If you are working on sherlock using the horence partition, you can try copying the folder `/scratch/PI/horence/JuliaO/snakemake` to `~/.config` by running `cp -r /scratch/PI/horence/JuliaO/snakemake ~/.config/` instead. You can then edit `~/.config/snakemake/slurm/slurm-submit.py` to change the `SBATCH_DEFAULTS` variable if you want (the current defaults are to use the partitions owners and horence, 10 minutes of time, and 4Gb of memory). All of the time and memory requirements for the SZS pipeline are specified in the script itself, so you don't need to change these variables if you're only running this pipeline.
 
+## Output
+
+The output file will be `scripts/output/rijk_zscore/<dataname>_sym_SVD_normgene_S_0.1_z_0.0_b_5.tsv`. The column `cell` indicates the cell, `geneR1A_uniq` is the gene name, `scZ` is the original SZS, and `svd_z0`, `svd_z1`, and `svd_z2` are the three z scores based on the first three SVD components. Note that this file has multiple lines for each gene + cell, so if you are just interested in the SZS you can deduplicate by cell + gene.
+
 ## Input file format
 This pipeline works with the "class input file" output of the [SICILIAN pipeline](https://github.com/salzmanlab/SICILIAN). To run the pipeline without running SICILIAN first, your data must be in the following format: one row per gene per splice junction, with a column indicating the cell, the donor position of the splice junction, the acceptor position of the splice junction, and the number of reads mapping to that splice junction. For differential alternative splicing analysis, the file must also include the metadata for different cell groups (cell type, tissue, compartment, etc).
 

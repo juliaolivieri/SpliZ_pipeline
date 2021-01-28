@@ -19,7 +19,7 @@ def get_args():
   parser.add_argument("--verbose",action="store_true",help="print times")
   parser.add_argument("--unfilt",action="store_true",help="don't filter by SICILIAN")
   parser.add_argument("--v2",action="store_true",help="filter by SICILIAN v2")
-
+  parser.add_argument("--SVD",action="store_true",help="perform SVD z score calculation")
 
 #  parser.add_argument("--bound_lower",action="store_true",help="include lower bound on number of junctional reads a cell + gene needs to have in order to get a z score")
 
@@ -107,7 +107,7 @@ def normalize_Sijks(df,let):
   return df
 
 def main():
-  SVD = False
+#  SVD = 
   let_dict = {"A" : "acc", "B" : "don"}
   t0 = time.time()
   args = get_args()
@@ -402,7 +402,7 @@ def main():
 
   ##### PERFORM SVD ZSCORE CALCULATION #####
 
-  if SVD:
+  if args.SVD:
     letters = ["A","B"]
     for let in letters:
       df["zcontrib{}_rep".format(let)] = df["zcontrib" + let].fillna(0)
