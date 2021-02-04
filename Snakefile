@@ -56,7 +56,7 @@ def get_SVD(datasets):
     for pin_S in pins_S:
       for pin_z in pins_z:
         for dataset in datasets.keys():
-          out.append("scripts/output/rijk_zscore/{}_sym_SVD_normgene_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
+          out.append("scripts/output/rijk_zscore/{}_sym_SVD_normdonor_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
 
   return out
 
@@ -132,10 +132,10 @@ rule all:
 #
 rule pq_to_tsv_SVD:
   input:
-    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normgene_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
 
   output:
-    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normgene_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
 
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 40000,
@@ -314,7 +314,7 @@ rule SVD_zscore:
     "scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
 
   output:
-    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normgene_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
 #    "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}.pq"
   resources:
 #    mem_mb=lambda wildcards, attempt: attempt * 750000,
@@ -333,5 +333,5 @@ rule SVD_zscore:
 
   shell:
     """
-    python3.6 -u scripts/SVD_zscore.py {params.ver} --svd_type normgene --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset}  --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
+    python3.6 -u scripts/SVD_zscore.py {params.ver} --svd_type normdonor --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset}  --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
     """
