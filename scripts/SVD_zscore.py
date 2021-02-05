@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import pyarrow
+from scipy import linalg
 import time
 from tqdm import tqdm
 import warnings
@@ -42,6 +43,7 @@ def main():
 
   outpath = "scripts/output/rijk_zscore/"
 
+  usecols = ["juncPosR1A","juncPosR1B","cell_gene","numReads","nSijkA","nSijkB","refName_newR1","cell","geneR1A_uniq"] 
   if args.temp:
     df = pd.read_parquet("{}{}_sym_temp_S_{}_z_{}_b_{}{}.pq".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff))
   else:
@@ -66,11 +68,16 @@ def main():
 
   letters = ["A","B"]
   for let in letters:
+
+    # replace NANs with zeros
     df["zcontrib{}_rep".format(let)] = df[zcontrib_col + let].fillna(0)
+
+    # create label for each junction + donor/acceptor
     df["str_juncPosR1" + let] = df["juncPosR1" + let].astype(int).astype(str) + "_" + let
     df["cell_gene_pos" + let] = df["cell"] + df["geneR1A_uniq"] + df["juncPosR1" + let].astype(str)
-    summed_vals = df.groupby("cell_gene_pos" + let)["zcontrib{}_rep".format(let)].sum()
-    df["summed_zcontrib" + let] = df["cell_gene_pos" + let].map(summed_vals) 
+
+    # get sum of zcontribs for the given cell and splice site
+    df["summed_zcontrib" + let] = df.groupby("cell_gene_pos" + let)["zcontrib{}_rep".format(let)].transform('sum')
 
   k = 3 # number of components to include
   loads = {"f{}".format(i) : {} for i in range(k)}
@@ -87,7 +94,7 @@ def main():
     gene_mat = gene_mats[0].merge(gene_mats[1],on="cell_gene")
     
     # calculate svd
-    u, s, vh = np.linalg.svd(gene_mat)
+    u, s, vh = linalg.svd(gene_mat,check_finite=False,full_matrices=False)
     
     if len(s) >= k:
       # calculate new z scores based on svd

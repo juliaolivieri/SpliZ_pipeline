@@ -318,9 +318,9 @@ rule SVD_zscore:
 #    "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}.pq"
   resources:
 #    mem_mb=lambda wildcards, attempt: attempt * 750000,
-    mem_mb=lambda wildcards, attempt: attempt * 120000,
+    mem_mb=lambda wildcards, attempt: attempt * 100000,
 
-    time_min=lambda wildcards, attempt: attempt * 60 * 24
+    time_min=lambda wildcards, attempt: attempt * 60 * 6
   log:
     out="job_output/SVD_zscore_{dataset}_{pinS}_{pinz}_{bound}.out",
     err="job_output/SVD_zscore_{dataset}_{pinS}_{pinz}_{bound}.err"
