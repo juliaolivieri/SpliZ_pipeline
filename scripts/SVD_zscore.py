@@ -1,6 +1,7 @@
 import argparse
 import datetime 
 import numpy as np
+import os
 import pandas as pd
 import pickle
 import pyarrow
@@ -35,13 +36,17 @@ def get_args():
 def main():
   args = get_args()
 
+  outpath = "scripts/output/rijk_zscore/"
+
+  if not os.path.exists("{}SVD_{}/".format(outpath,args.svd_type)):
+    os.makedirs('{}SVD_{}/'.format(outpath,args.svd_type))
+
   suff = ""
   if args.light:
     suff += "_light"
   if args.unfilt:
     suff += "_unfilt"
 
-  outpath = "scripts/output/rijk_zscore/"
 
   usecols = ["juncPosR1A","juncPosR1B","cell_gene","numReads","nSijkA","nSijkB","refName_newR1","cell","geneR1A_uniq"] 
   if args.temp:
@@ -60,7 +65,7 @@ def main():
       
       # find number of reads per donor (or acceptor) per cell
       df["cell_gene_pos" + let] = df["cell_gene"] + df["juncPosR1" + let].astype(str)
-      df["n.g_pos" + let] = df["cell_gene_pos" + let].map(df.groupby("cell_gene_pos" + let)["numReads"].sum())
+      df["n.g_pos" + let] = df.groupby("cell_gene_pos" + let)["numReads"].transform("sum")
       
       # normalize on a donor/acceptor rather than a gene basis
       df["zcontrib_posnorm" + let] = df["numReads"] * df["nSijk" + let] / np.sqrt(df["n.g_pos" + let])
