@@ -1,6 +1,7 @@
 
 datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"]}
 
+num_perms = 10
 
 # filter by SICILIAN v2
 ver = "--v2"
@@ -126,9 +127,10 @@ rule all:
   input:
     get_rijk_zscores(datasets),
     get_SVD(datasets),
-    get_sig(datasets, bounds),
-    get_anova(datasets),
-    get_FDR(datasets)
+    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds)
+#    get_sig(datasets, bounds),
+#    get_anova(datasets),
+#    get_FDR(datasets)
 #
 rule pq_to_tsv_SVD:
   input:
@@ -334,4 +336,29 @@ rule SVD_zscore:
   shell:
     """
     python3.6 -u scripts/SVD_zscore.py {params.ver} --svd_type normdonor --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset}  --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
+    """
+
+rule perm_pval:
+  input:
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+
+  output:
+    "scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+#    "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}.pq"
+  resources:
+#    mem_mb=lambda wildcards, attempt: attempt * 750000,
+    mem_mb=lambda wildcards, attempt: attempt * 60000,
+
+    time_min=lambda wildcards, attempt: attempt * 60 * 6
+  log:
+    out="job_output/perm_pval_{dataset}_{pinS}_{pinz}_{bound}.out",
+    err="job_output/perm_pval_{dataset}_{pinS}_{pinz}_{bound}.err"
+
+  params:
+    suffix="_S_{pinS}_z_{pinz}_b_{bound}" + suff,
+    num_perms=num_perms
+
+  shell:
+    """
+    python3.6 -u scripts/perm_pvals.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
     """

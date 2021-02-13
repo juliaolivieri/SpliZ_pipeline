@@ -48,12 +48,12 @@ def calc_Sijk(df,let, pinning_S, let_dict):
   # same as this calculation (this one's slower): df["rank_mean"] = df.groupby("pos{}_group".format(let)).apply(lambda x: (x["numReads"] * x["rank_acc"])/x["numReads"].sum()).reset_index(level=0,drop=True)
 
   # number of reads with this donor across all cells
-  df["sum_reads_group"] = df["pos{}_group".format(let)].map(df.groupby("pos{}_group".format(let))["numReads"].sum())
+  df["sum_reads_group"] = df.groupby("pos{}_group".format(let))["numReads"].transform("sum")
 
   df["read_x_" + let_dict[let]] = df["numReads"] * df["rank_" + let_dict[let]]
 
   # the sum of acceptors for all reads in all cells with this donor
-  df["num"] = df["pos{}_group".format(let)].map(df.groupby("pos{}_group".format(let))["read_x_" + let_dict[let]].sum())
+  df["num"] = df.groupby("pos{}_group".format(let))["read_x_" + let_dict[let]].transform("sum")
 
   # average acceptor for a read with this donor (donor has one value for this)
   df["rank_mean"]= df["num"] / df["sum_reads_group"]
@@ -63,7 +63,8 @@ def calc_Sijk(df,let, pinning_S, let_dict):
   df["sq_diff"] = df["numReads"] * (df["rank_" + let_dict[let]] - df["rank_mean"])**2
 
   # Get the sum of these squared differences for each donor
-  df["don_num"] = df["pos{}_group".format(let)].map(df.groupby("pos{}_group".format(let))["sq_diff"].sum())
+  df["don_num"] = df.groupby("pos{}_group".format(let))["sq_diff"].transform("sum")
+
 
   # sum of squared differences normalized by total number of reads
   # changed to make it the sample standard deviation (added minus 1)
@@ -92,8 +93,8 @@ def calc_Sijk(df,let, pinning_S, let_dict):
 def normalize_Sijks(df,let):
   # calculate mean of SijkA's per gene
   df["n_s"] = df["numReads"] * df["S_ijk_" + let]
-  df["num"] = df["geneR1A_uniq"].map(df.groupby("geneR1A_uniq")["n_s"].sum())
-  df["n_gene"] = df["geneR1A_uniq"].map(df.groupby("geneR1A_uniq")["numReads"].sum())
+  df["num"] = df.groupby("geneR1A_uniq")["n_s"].transform("sum")
+  df["n_gene"] = df.groupby("geneR1A_uniq")["numReads"].transform("sum")
   df["sijk{}_mean".format(let)] = df["num"] / df["n_gene"]
 
   # calculate standard deviation of SijkA's per gene
@@ -101,7 +102,7 @@ def normalize_Sijks(df,let):
   # temp_df["sijkA_mean"] = temp_df["num"] / temp_df["n_gene"]
   # temp_df["S_ijk_A_mean"] = temp_df["geneR1A_uniq"].map(temp_df.groupby("geneR1A_uniq")["S_ijk_A"].mean())
   df["sd_num"] = df["numReads"] * (df["S_ijk_" + let] - df["sijk{}_mean".format(let)])**2
-  df["num"] = df["geneR1A_uniq"].map(df.groupby("geneR1A_uniq")["sd_num"].sum())
+  df["num"] = df.groupby("geneR1A_uniq")["sd_num"].transform("sum")
   df["sijk{}_var".format(let)] = df["num"] / df["n_gene"]
 #  df["S_ijk_{}".format(let)] = (df["S_ijk_{}".format(let)] - df["sijk{}_mean".format(let)])/np.sqrt(df["sijk{}_var".format(let))
   return df
@@ -133,7 +134,7 @@ def main():
   if args.unfilt:
 
     # only include junctions with more than 1 read in the dataset
-    df["numReads_tot"] = df["refName_newR1"].map(df.groupby("refName_newR1")["numReads"].sum())
+    df["numReads_tot"] = df.groupby("refName_newR1")["numReads"].transform("sum")
     df = df[df["numReads_tot"] > 1]
 
   elif args.v2:
@@ -220,7 +221,7 @@ def main():
   if args.verbose:
     print("remove constitutive",datetime.timedelta(seconds = time.time() - t0))
   # require at least args.lower_bound nonconstitutive spliced reads
-  df["noncon_count"] = df["cell_gene"].map(df.groupby("cell_gene")["numReads"].sum())
+  df["noncon_count"] = df.groupby("cell_gene")["numReads"].transform("sum")
   df = df[df["noncon_count"] > args.lower_bound]
 
   full_df = df.copy()
@@ -247,11 +248,11 @@ def main():
 
     # calculate z score 
 #    df["n_g"] = df["cell_gene"].map(df.groupby("cell_gene")["n_sijk"].sum())
-    df["n.g_" + let] = df["cell_gene"].map(df.groupby("cell_gene")["numReads"].sum())
+    df["n.g_" + let] = df.groupby("cell_gene")["numReads"].transform("sum")
 
     df["nSijk" + let] = (df["S_ijk_" + let] - df["sijk{}_mean".format(let)]) / np.sqrt(df["sijk{}_var".format(let)])
     df["mult"] = df["numReads"] * df["nSijk" + let]  / np.sqrt(df["n.g_" + let])
-    df["z_" + let] = df["sign"] * df["cell_gene"].map(df.groupby("cell_gene")["mult"].sum())
+    df["z_" + let] = df["sign"] * df.groupby("cell_gene")["mult"].transform("sum")
     df["scaled_z_" + let] = df["z_" + let] / np.sqrt(df["n.g_" + let])
 
     if args.verbose:
@@ -265,8 +266,8 @@ def main():
       df["x_sijk"] = df["S_ijk_{}".format(let)] * df["n_sijk"]
 #      df["x_sijk"] = df["S_ijk_{}".format(let)] * df["n_sijk"]
 
-      df["num"] = df["cell_gene"].map(df.groupby("cell_gene")["x_sijk"].sum())
-      df["denom_sq"] = df["cell_gene"].map(df.groupby("cell_gene")["n_sijk"].sum())
+      df["num"] = df.groupby("cell_gene")["x_sijk"].transform("sum")
+      df["denom_sq"] = df.groupby("cell_gene")["n_sijk"].transform("sum")
   #    df["z_{}".format(let)] = df["sign"] * df["num"]/np.sqrt(df["denom_sq"])
   
       # get junction that "contributes the most" to the z score
@@ -394,7 +395,7 @@ def main():
   if args.unfilt:
     suff += "_unfilt"
 
-  df["n.g"] = df["cell_gene"].map(df.groupby("cell_gene")["numReads"].sum())
+  df["n.g"] = df.groupby("cell_gene")["numReads"].transform("sum")
   df["scaled_z"] = df["z"] / np.sqrt(df["n.g"])
 
   for let in ["A","B"]:
