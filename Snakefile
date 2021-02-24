@@ -123,10 +123,11 @@ def get_all_infiles(datasets):
       outputs.append("data/{}.pq".format(dataset))
   return outputs
 print(get_SVD(datasets))
+
 rule all:         
   input:
-    get_rijk_zscores(datasets),
-    get_SVD(datasets),
+#    get_rijk_zscores(datasets),
+#    get_SVD(datasets),
     expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds)
 #    get_sig(datasets, bounds),
 #    get_anova(datasets),

@@ -58,6 +58,8 @@ To set up snakemake to run on slurm, you can follow the directions here: [https:
 
 The output file will be `scripts/output/rijk_zscore/<dataname>_sym_SVD_normgene_S_0.1_z_0.0_b_5.tsv`. The column `cell` indicates the cell, `geneR1A_uniq` is the gene name, `scZ` is the original SZS, and `svd_z0`, `svd_z1`, and `svd_z2` are the three z scores based on the first three SVD components. Note that this file has multiple lines for each gene + cell, so if you are just interested in the SZS you can deduplicate by cell + gene.
 
+There is also output in `scripts/output/perm_pvals/*_fdr_10_0.1_z_0.0_b_5.tsv` including a p value calculated based on permutations (`quant_pval`) for each gene and ontology based on the `scZ`.
+
 ## Input file format
 This pipeline works with the "class input file" output of the [SICILIAN pipeline](https://github.com/salzmanlab/SICILIAN). To run the pipeline without running SICILIAN first, your data must be in the following format: one row per gene per splice junction, with a column indicating the cell, the donor position of the splice junction, the acceptor position of the splice junction, and the number of reads mapping to that splice junction. For differential alternative splicing analysis, the file must also include the metadata for different cell groups (cell type, tissue, compartment, etc).
 

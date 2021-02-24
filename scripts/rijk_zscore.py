@@ -333,7 +333,7 @@ def main():
     z_dict = pd.Series(calc_dfs[let]["z_" + let].values,index=calc_dfs[let].cell_gene).to_dict()
     df["z_" + let] = df["cell_gene"].map(z_dict)
     scz_dict = pd.Series(calc_dfs[let]["scaled_z_" + let].values,index=calc_dfs[let].cell_gene).to_dict()
-    df["scaled_z_" + let] = df["cell_gene"].map(z_dict)
+    df["scaled_z_" + let] = df["cell_gene"].map(scz_dict)
 
   df["cov"] = df["geneR1A_uniq"].map(grouped.apply(lambda x: x['z_A'].cov(x['z_B'])))
 

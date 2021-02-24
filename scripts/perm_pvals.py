@@ -94,13 +94,13 @@ def main():
   # find ontologies, tissues, compartments, cell types
   df["ontology"] = df["tissue"] + df["compartment"] + df["free_annotation"]
   df["ontology_gene"] = df["ontology"] + df["geneR1A_uniq"]
-  df["numReads_ont"] = df["ontology_gene"].map(df.groupby("ontology_gene")["n.g"].sum())
+#  df["numReads_ont"] = df["ontology_gene"].map(df.groupby("ontology_gene")["numReads"].sum())
   # remove those that lack annotation or gene name
   df = df[(df["free_annotation"] != "") & (~df["geneR1A_uniq"].isin(["","unknown"]))]
   tiss_dict = pd.Series(df.tissue.values,index=df.ontology).to_dict()
   comp_dict = pd.Series(df.compartment.values,index=df.ontology).to_dict()
   freeann_dict = pd.Series(df.free_annotation.values,index=df.ontology).to_dict()
-  df["numReads_ont"] = df["ontology_gene"].map(df.groupby("ontology_gene")["n.g"].sum())
+#  df["numReads_ont"] = df["ontology_gene"].map(df.groupby("ontology_gene")["numReads"].sum())
   
   # mark which quantile each gene is in (by cell)
   df["num_cells_gene_ont"] = df["ontology_gene"].map(df.groupby("ontology_gene")["cell"].nunique())
