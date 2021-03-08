@@ -91,6 +91,7 @@ def calc_Sijk(df,let, pinning_S, let_dict):
   return df
 
 def normalize_Sijks(df,let):
+
   # calculate mean of SijkA's per gene
   df["n_s"] = df["numReads"] * df["S_ijk_" + let]
   df["num"] = df.groupby("geneR1A_uniq")["n_s"].transform("sum")

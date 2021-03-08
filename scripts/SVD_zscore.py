@@ -21,6 +21,8 @@ def get_args():
   parser.add_argument("--v2",action="store_true",help="filter by SICILIAN v2")
   parser.add_argument("--temp",action="store_true",help="overwrite temp file")
   parser.add_argument("--svd_type",choices=["normgene","normdonor"],help="method of calculating matrix before SVD")
+  parser.add_argument("--test",help="just run for MYL6 for testing purposes")
+
 
 
 
@@ -68,7 +70,8 @@ def main():
       df["n.g_pos" + let] = df.groupby("cell_gene_pos" + let)["numReads"].transform("sum")
       
       # normalize on a donor/acceptor rather than a gene basis
-      df["zcontrib_posnorm" + let] = df["numReads"] * df["nSijk" + let] / np.sqrt(df["n.g_pos" + let])
+      # TRY OUT NOT SQRT-ING denominator as normalization
+      df["zcontrib_posnorm" + let] = df["numReads"] * df["nSijk" + let] / df["n.g_pos" + let]
     zcontrib_col = "zcontrib_posnorm"
 
   letters = ["A","B"]
@@ -97,7 +100,14 @@ def main():
 
       gene_mats.append(gene_mat)
     gene_mat = gene_mats[0].merge(gene_mats[1],on="cell_gene")
+
+    # remove columns that are only zeros (could save space)
+#    gene_mat = gene_mat.loc[:, (gene_mat != 0).any(axis=0)]
+
+    # mean-normalize the rows
+    gene_mat = gene_mat.subtract(gene_mat.mean(axis=1),axis=0)
     
+#    print("gene mat shape",gene_mat.shape)
     # calculate svd
     u, s, vh = linalg.svd(gene_mat,check_finite=False,full_matrices=False)
     
