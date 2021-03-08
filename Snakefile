@@ -1,7 +1,7 @@
 
-datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"]}
+datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"]}#,"HLCA4_P2_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_shuffle" :  ["10x","human"]}#,"TSP1_10x_with_postprocessing_nopanc_cellann" : ["10x","human"],"TSP2_10x_rerun_with_postprocessing_3prime_cellann" : ["10x","human"]}
 
-num_perms = 10
+num_perms = 2
 
 # filter by SICILIAN v2
 ver = "--v2"
@@ -361,5 +361,9 @@ rule perm_pval:
 
   shell:
     """
-    python3.6 -u scripts/perm_pvals.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+    python3.6 -u scripts/perm_pvals.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} --z_col scZ 1>> {log.out} 2>> {log.err}
+    python3.6 -u scripts/perm_pvals.py --z_col svd_z0 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+    python3.6 -u scripts/perm_pvals.py --z_col svd_z1 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+    python3.6 -u scripts/perm_pvals.py --z_col svd_z2 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+
     """
