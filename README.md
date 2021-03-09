@@ -30,17 +30,16 @@ You will need to place the following files in the "data" directory (read on for 
 * `HLCA4_P2_10x_with_postprocessing_lung.pq`
 * `HLCA4_P3_10x_with_postprocessing_lung.pq`
 
-And the following files in the util_files directory:
+And the following file in the util_files directory:
 * `GRCh38_latest_genomic.gtf`
-* `ucscGenePfam.txt`
 
 If you are working on Sherlock with access to the horence partition, you can run 
 
-`cp /scratch/PI/horence/JuliaO/single_cell/SZS_pipeline/data/* data/`
+`cp /oak/stanford/groups/horence/JuliaO/SZS_data/* data/`
 
 and
 
-`cp /scratch/PI/horence/JuliaO/single_cell/SZS_pipeline/util_files/* util_files/`
+`cp /oak/stanford/groups/horence/JuliaO/gtf_files/GRCh38_latest_genomic.gtf util_files/`
 
 to get these files.
 
@@ -52,7 +51,7 @@ The terminal window you submit from will not be available again until after the 
 
 The pipeline should take around one hour to run.
 
-To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). If you are working on sherlock using the horence partition, you can try copying the folder `/scratch/PI/horence/JuliaO/snakemake` to `~/.config` by running `cp -r /scratch/PI/horence/JuliaO/snakemake ~/.config/` instead. You can then edit `~/.config/snakemake/slurm/slurm-submit.py` to change the `SBATCH_DEFAULTS` variable if you want (the current defaults are to use the partitions owners and horence, 10 minutes of time, and 4Gb of memory). All of the time and memory requirements for the SZS pipeline are specified in the script itself, so you don't need to change these variables if you're only running this pipeline.
+To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). If you are working on sherlock using the horence partition, you can try copying the folder `/oak/stanford/groups/horence/JuliaO/snakemake/` to `~/.config` by running `cp -r /oak/stanford/groups/horence/JuliaO/snakemake ~/.config/` instead. You can then edit `~/.config/snakemake/slurm/slurm-submit.py` to change the `SBATCH_DEFAULTS` variable if you want (the current defaults are to use the partitions owners and horence, 10 minutes of time, and 4Gb of memory). All of the time and memory requirements for the SZS pipeline are specified in the script itself, so you don't need to change these variables if you're only running this pipeline.
 
 ## Output
 
