@@ -2,7 +2,6 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pyarrow
 from scipy.stats import norm
 from tqdm import tqdm
 import warnings

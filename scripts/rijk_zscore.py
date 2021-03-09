@@ -3,7 +3,6 @@ import datetime
 import numpy as np
 import pandas as pd
 import pickle
-import pyarrow
 import time
 from tqdm import tqdm
 import warnings
@@ -115,7 +114,7 @@ def main():
   args = get_args()
   outpath = "scripts/output/rijk_zscore/"
 
-  df = pd.read_parquet(args.parquet,columns=["inc_emp.p","tissue","gene_count_per_cell_filt","juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","channel","splice_ann","tissue","compartment","free_annotation","missing_domains","domain_insertions","refName_newR1","gene_frac_filt","called","chrR1A","exon_annR1A","exon_annR1B"])
+  df = pd.read_parquet(args.parquet,columns=["tissue","gene_count_per_cell_filt","juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","channel","splice_ann","tissue","compartment","free_annotation","refName_newR1","gene_frac_filt","called","chrR1A","exon_annR1A","exon_annR1B"])
   if args.verbose:
     print("read in parquet",datetime.timedelta(seconds = time.time() - t0))
   if "missing_domains" in df.columns and not args.light:

@@ -1,5 +1,4 @@
 import argparse
-import pyarrow
 import pandas as pd
 
 def get_args():

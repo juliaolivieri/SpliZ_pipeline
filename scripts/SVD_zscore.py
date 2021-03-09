@@ -4,7 +4,6 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
-import pyarrow
 from scipy import linalg
 import time
 from tqdm import tqdm
