@@ -1,7 +1,7 @@
 
 datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"]}#,"HLCA4_P2_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_shuffle" :  ["10x","human"]}#,"TSP1_10x_with_postprocessing_nopanc_cellann" : ["10x","human"],"TSP2_10x_rerun_with_postprocessing_3prime_cellann" : ["10x","human"]}
 
-num_perms = 2
+num_perms = 100
 
 # filter by SICILIAN v2
 ver = "--v2"
@@ -128,7 +128,10 @@ rule all:
   input:
 #    get_rijk_zscores(datasets),
 #    get_SVD(datasets),
-    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds)
+#    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
+
+#    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
 #    get_sig(datasets, bounds),
 #    get_anova(datasets),
 #    get_FDR(datasets)
@@ -365,5 +368,29 @@ rule perm_pval:
     python3.6 -u scripts/perm_pvals.py --z_col svd_z0 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
     python3.6 -u scripts/perm_pvals.py --z_col svd_z1 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
     python3.6 -u scripts/perm_pvals.py --z_col svd_z2 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+
+    """
+
+rule var_adj_perm_pval:
+  input:
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+
+  output:
+    "scripts/output/variance_adjusted_permutations/{dataset}_pvals_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 20000,
+
+    time_min=lambda wildcards, attempt: attempt * 60 * 8
+  log:
+    out="job_output/var_adj_perm_pval_{dataset}_{pinS}_{pinz}_{bound}.out",
+    err="job_output/var_adjperm_pval_{dataset}_{pinS}_{pinz}_{bound}.err"
+
+  params:
+    suffix="_S_{pinS}_z_{pinz}_b_{bound}" + suff,
+    num_perms=num_perms
+
+  shell:
+    """
+    python3.6 -u scripts/variance_adjusted_permutations.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
 
     """
