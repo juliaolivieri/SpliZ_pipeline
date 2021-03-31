@@ -45,10 +45,10 @@ def get_var_df(sub_df, z_col, adj_var):
   var_df = sub_df.drop_duplicates("ontology")[["ontology","ont_median","num_cells_ont","ont_var"]]
 
   # don't need to remove cell types with variance 0 when we're adjusting variance
-#  if not adj_var:
+  if not adj_var:
 
-  # remove ontologies with zero variance
-  var_df = var_df[var_df["ont_var"] > 0]
+    # remove ontologies with zero variance
+    var_df = var_df[var_df["ont_var"] > 0]
   return var_df
 
 def main():
@@ -56,16 +56,16 @@ def main():
   outpath = "scripts/output/variance_adjusted_permutations/"
   args = get_args()
 
-  df = pd.read_parquet("scripts/output/rijk_zscore/{}_sym_SVD_normdonor{}.pq".format(args.dataname,args.suffix),columns=["geneR1A_uniq","ontology","cell","scZ","svd_z0","svd_z1","svd_z2","cell_gene"])
+  df = pd.read_parquet("scripts/output/rijk_zscore/{}_sym_SVD_normdonor{}.pq".format(args.dataname,args.suffix),columns=["geneR1A_uniq","ontology","cell","scZ","svd_z0","svd_z1","svd_z2","cell_gene","f0","f1","f2"])
   df = df.drop_duplicates("cell_gene")
 
   # subset to ontologies with > 20 cells
   df["ontology_gene"] = df["ontology"] + df["geneR1A_uniq"]
   df["num_ont_gene"] = df["ontology_gene"].map(df.groupby("ontology_gene")["cell_gene"].nunique())
-  df = df[df["num_ont_gene"] > 20]
+  df = df[df["num_ont_gene"] > 10]
 
   z_cols = ["scZ","svd_z0","svd_z1","svd_z2"]
-  out = {"pval" : [], "geneR1A_uniq" : [], "num_onts" : [],"z_col" : [],"max_abs_median" : []}
+  out = {"pval" : [], "geneR1A_uniq" : [], "num_onts" : [],"z_col" : [],"max_abs_median" : [], "Tn1" : []}
   
   var_adj = 0.1
   adj_var = True
@@ -86,6 +86,8 @@ def main():
           var_df["ont_var"] = var_df["ont_var"] + var_adj
         pval, Tn1 = calc_pval(var_df)
         out["pval"].append(pval)
+        out["Tn1"].append(Tn1)
+
         out["geneR1A_uniq"].append(gene)
         out["num_onts"].append(var_df.shape[0])
         out["z_col"].append(z_col)
@@ -116,6 +118,8 @@ def main():
     out_df.loc[out_df["z_col"] == z_col, "pval_adj"] = multipletests(out_df.loc[out_df["z_col"] == z_col, "pval"],alpha, method="fdr_bh")[1]
     out_df.loc[(out_df["z_col"] == z_col) & (~out_df["perm_pval2"].isna()), "perm_pval2_adj"] = multipletests(out_df.loc[(out_df["z_col"] == z_col) & (~out_df["perm_pval2"].isna()), "perm_pval2"],alpha, method="fdr_bh")[1]
 
+  out_df.to_csv("{}{}_outdf_{}{}.tsv".format(outpath,args.dataname, args.num_perms,args.suffix),sep="\t",index=False)
+
  
  #   out_df["pval_adj"] = multipletests(out_df["pval"],alpha, method="fdr_bh")[1]
 #  out_df["pval_adj"] = multipletests(out_df["pval"],alpha, method="fdr_bh")[1]
@@ -144,5 +148,12 @@ def main():
       new_out["max_abs_median_" + z_col].append(np.nan)
       new_out["perm_cdf_" + z_col].append(np.nan) 
   new_out_df = pd.DataFrame.from_dict(new_out).sort_values("perm_pval_adj_scZ")
+
+  # add frac from SVD for each gene
+  df = df.drop_duplicates("geneR1A_uniq")
+  for i in range(3):
+    frac_dict = pd.Series(df["f" + str(i)].values,index=df.geneR1A_uniq).to_dict()
+    new_out_df["f" + str(i)] = new_out_df["geneR1A_uniq"].map(frac_dict)
+
   new_out_df.to_csv("{}{}_pvals_{}{}.tsv".format(outpath,args.dataname, args.num_perms,args.suffix),sep="\t",index=False)
 main()

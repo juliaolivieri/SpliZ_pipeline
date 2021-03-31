@@ -4,3 +4,4 @@ notebooks/output/*
 job_output/*
 *.out
 .*
+report.html

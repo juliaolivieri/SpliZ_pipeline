@@ -1,5 +1,6 @@
+datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"],"HLCA_smartseq_P2_with_postprocessing_shared" : ["ss2","human"],"HLCA_smartseq_P3_with_postprocessing_shared" : ["ss2","human"]}
 
-datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"]}#,"HLCA4_P2_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_shuffle" :  ["10x","human"]}#,"TSP1_10x_with_postprocessing_nopanc_cellann" : ["10x","human"],"TSP2_10x_rerun_with_postprocessing_3prime_cellann" : ["10x","human"]}
+#datasets = {"Lemur_10x_Stumpy_with_postprocessing_cellann" : ["10x","lemur"],"Lemur_10x_Antoine_with_postprocessing_cellann" : ["10x","lemur"],"Tabula_muris_senis_P1_10x_with_postprocessing_cellann" : ["10x","mouse"],"Tabula_muris_senis_P2_10x_with_postprocessing_cellann" : ["10x","mouse"],"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_remove_ss2missed" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_remove_ss2missed" : ["10x","human"],"HLCA_smartseq_P2_with_postprocessing" : ["ss2","human"],"HLCA_smartseq_P3_with_postprocessing" : ["ss2","human"],"HLCA4_P2_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"TSP1_10x_with_postprocessing_nopanc_cellann" : ["10x","human"],"TSP2_10x_rerun_with_postprocessing_3prime_cellann" : ["10x","human"], "TS_pilot_smartseq_with_postprocessing_nopanc_cellann" : ["ss2","human"], "TSP2_SS2_RUN1_RUN2_cellann" : ["ss2","human"]}
 
 num_perms = 100
 
@@ -129,7 +130,7 @@ rule all:
 #    get_rijk_zscores(datasets),
 #    get_SVD(datasets),
 #    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
-    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/variance_adjusted_permutations/{dataset}_outdf_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
 
 #    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
 #    get_sig(datasets, bounds),
@@ -297,9 +298,11 @@ rule rijk_zscore:
 #    "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}.pq"
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 80000,
-#    mem_mb=lambda wildcards, attempt: attempt * 120000,
+#    mem_mb=lambda wildcards, attempt: attempt * 300000,
 
     time_min=lambda wildcards, attempt: attempt * 60 * 2 
+#    time_min=lambda wildcards, attempt: attempt * 60 *  10
+
   log:
     out="job_output/rijk_zscore_{dataset}_{pinS}_{pinz}_{bound}.out",
     err="job_output/rijk_zscore_{dataset}_{pinS}_{pinz}_{bound}.err"
@@ -376,11 +379,13 @@ rule var_adj_perm_pval:
     "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
 
   output:
-    "scripts/output/variance_adjusted_permutations/{dataset}_pvals_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+    "scripts/output/variance_adjusted_permutations/{dataset}_pvals_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",
+    "scripts/output/variance_adjusted_permutations/{dataset}_outdf_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 20000,
 
-    time_min=lambda wildcards, attempt: attempt * 60 * 8
+    time_min=lambda wildcards, attempt: attempt * 60 * 20
   log:
     out="job_output/var_adj_perm_pval_{dataset}_{pinS}_{pinz}_{bound}.out",
     err="job_output/var_adjperm_pval_{dataset}_{pinS}_{pinz}_{bound}.err"
