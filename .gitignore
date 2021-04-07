@@ -1,5 +1,6 @@
 data/*
 scripts/output/*
+scripts/job_output/*
 notebooks/output/*
 job_output/*
 *.out
