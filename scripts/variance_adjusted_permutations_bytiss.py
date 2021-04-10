@@ -57,12 +57,14 @@ def get_var_df(sub_df, z_col, adj_var, group_col):
 
 def main():
   print("current working directory",os.getcwd())
+  np.random.seed(123)
   alpha = 0.05
   outpath = "scripts/output/variance_adjusted_permutations/"
   args = get_args()
 
   df = pd.read_parquet("scripts/output/rijk_zscore/{}_sym_SVD_normdonor{}.pq".format(args.dataname,args.suffix),columns=["geneR1A_uniq",args.group_col,"cell","scZ","svd_z0","svd_z1","svd_z2","cell_gene","f0","f1","f2","tissue","compartment"])
   df = df.drop_duplicates("cell_gene")
+  df["tiss_comp"] = df["tissue"] + df["compartment"]
 
   # subset to ontologies with > 20 cells
   df["ontology_gene"] = df[args.group_col] + df["geneR1A_uniq"]
@@ -122,14 +124,18 @@ def main():
   out_df["perm_pval_inv"] = 1 - out_df["perm_pval"] 
   out_df["perm_pval2"] = 2*out_df[["perm_pval","perm_pval_inv"]].min(axis=1)
    # adjust p values separately per z score
-  for z_col in z_cols:
+#  for z_col in z_cols:
+#
+#    # check that there's at least one non-nan value
+#    if (out_df[out_df["z_col"] == z_col]["pval"].isna()).sum() < out_df[out_df["z_col"]].shape[0]:
+#      out_df.loc[out_df["z_col"] == z_col, "pval_adj"] = multipletests(out_df.loc[out_df["z_col"] == z_col, "pval"],alpha, method="fdr_bh")[1]
+#    out_df.loc[(out_df["z_col"] == z_col) & (~out_df["perm_pval2"].isna()), "perm_pval2_adj"] = multipletests(out_df.loc[(out_df["z_col"] == z_col) & (~out_df["perm_pval2"].isna()), "perm_pval2"],alpha, method="fdr_bh")[1]
 
-    # check that there's at least one non-nan value
-    if (out_df[out_df["z_col"] == z_col]["pval"].isna()).sum() < out_df[out_df["z_col"]].shape[0]:
-      out_df.loc[out_df["z_col"] == z_col, "pval_adj"] = multipletests(out_df.loc[out_df["z_col"] == z_col, "pval"],alpha, method="fdr_bh")[1]
-    out_df.loc[(out_df["z_col"] == z_col) & (~out_df["perm_pval2"].isna()), "perm_pval2_adj"] = multipletests(out_df.loc[(out_df["z_col"] == z_col) & (~out_df["perm_pval2"].isna()), "perm_pval2"],alpha, method="fdr_bh")[1]
+  # adjust p values all together
+  out_df["pval_adj"] = multipletests(out_df["pval"],alpha, method="fdr_bh")[1]
+  out_df.loc[~out_df["perm_pval2"].isna(),"perm_pval2_adj"] = multipletests(out_df.loc[~out_df["perm_pval2"].isna(),"perm_pval2"], alpha, method = "fdr_bh")[1]
 
-  out_df.to_csv("{}{}_outdf_{}_{}_{}{}.tsv".format(outpath,args.dataname,args.group_col, args.sub_col,args.num_perms,args.suffix),sep="\t",index=False)
+  out_df.to_csv("{}{}_outdf_{}-{}_{}{}.tsv".format(outpath,args.dataname,args.group_col, args.sub_col,args.num_perms,args.suffix),sep="\t",index=False)
 
  
  #   out_df["pval_adj"] = multipletests(out_df["pval"],alpha, method="fdr_bh")[1]
@@ -168,5 +174,5 @@ def main():
     frac_dict = pd.Series(df["f" + str(i)].values,index=df.geneR1A_uniq).to_dict()
     new_out_df["f" + str(i)] = new_out_df["geneR1A_uniq"].map(frac_dict)
 
-  new_out_df.to_csv("{}{}_pvals_{}_{}_{}{}.tsv".format(outpath,args.dataname,args.group_col, args.sub_col,args.num_perms,args.suffix),sep="\t",index=False)
+  new_out_df.to_csv("{}{}_pvals_{}-{}_{}{}.tsv".format(outpath,args.dataname,args.group_col, args.sub_col,args.num_perms,args.suffix),sep="\t",index=False)
 main()

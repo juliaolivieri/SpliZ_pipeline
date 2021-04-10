@@ -1,16 +1,14 @@
-datasets = {"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"],"HLCA_smartseq_P2_with_postprocessing_shared" : ["ss2","human"],"HLCA_smartseq_P3_with_postprocessing_shared" : ["ss2","human"]}
-
-#datasets = {"Lemur_10x_Stumpy_with_postprocessing_cellann" : ["10x","lemur"],"Lemur_10x_Antoine_with_postprocessing_cellann" : ["10x","lemur"],"Tabula_muris_senis_P1_10x_with_postprocessing_cellann" : ["10x","mouse"],"Tabula_muris_senis_P2_10x_with_postprocessing_cellann" : ["10x","mouse"],"HLCA4_P2_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung" : ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_remove_ss2missed" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_remove_ss2missed" : ["10x","human"],"HLCA_smartseq_P2_with_postprocessing" : ["ss2","human"],"HLCA_smartseq_P3_with_postprocessing" : ["ss2","human"],"HLCA4_P2_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_lungimmuneMacrophage_10" : ["10x","human"],"HLCA4_P3_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"HLCA4_P2_10x_with_postprocessing_lung_shuffle" :  ["10x","human"],"TSP1_10x_with_postprocessing_nopanc_cellann" : ["10x","human"],"TSP2_10x_rerun_with_postprocessing_3prime_cellann" : ["10x","human"], "TS_pilot_smartseq_with_postprocessing_nopanc_cellann" : ["ss2","human"], "TSP2_SS2_RUN1_RUN2_cellann" : ["ss2","human"]}
+datasets = ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"]
 
 num_perms = 100
 
 # filter by SICILIAN v2
 ver = "--v2"
 
-all_groups = {
-              "HLCA4_P2_10x_with_postprocessing_lung" : ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"],
-              "HLCA4_P3_10x_with_postprocessing_lung" : ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"]
-}
+#all_groups = {
+#              "HLCA4_P2_10x_with_postprocessing_lung" : ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"],
+#              "HLCA4_P3_10x_with_postprocessing_lung" : ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"]
+#}
 
 light = False
 z_col = "scZ"
@@ -33,7 +31,7 @@ bounds = [5]
 
 def get_anova(datasets):
   out = []
-  for dataset in datasets.keys():
+  for dataset in datasets:
     for b in bounds:
       for pin_S in pins_S:
         for pin_z in pins_z:
@@ -42,7 +40,7 @@ def get_anova(datasets):
 
 def get_FDR(datasets):
   out = []
-  for dataset in datasets.keys():
+  for dataset in datasets:
     for b in bounds:
       for pin_S in pins_S:
         for pin_z in pins_z:
@@ -57,7 +55,7 @@ def get_SVD(datasets):
   for b in bounds:
     for pin_S in pins_S:
       for pin_z in pins_z:
-        for dataset in datasets.keys():
+        for dataset in datasets:
           out.append("scripts/output/rijk_zscore/{}_sym_SVD_normdonor_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
 
   return out
@@ -67,7 +65,7 @@ def get_rijk_zscores(datasets):
   for b in bounds:
     for pin_S in pins_S:
       for pin_z in pins_z:
-        for dataset in datasets.keys():
+        for dataset in datasets:
           out.append("scripts/output/rijk_zscore/{}_sym_S_{}_z_{}_b_{}{}.tsv".format(dataset,pin_S,pin_z,b,suff))
 
   return out
@@ -77,16 +75,10 @@ def get_sig(datasets, bounds):
   for b in bounds:
     for pin_S in pins_S:
       for pin_z in pins_z:
-        for dataset in datasets.keys():
+        for dataset in datasets:
           out.append("scripts/output/significant_genes/{}-{}_allp_S_{}_z_{}_b_{}{}.tsv".format(dataset,z_col,pin_S,pin_z,b, suff))
 
   return out
-
-def get_method(wildcards):
-  return datasets[wildcards.dataset][0]
-
-def get_organism(wildcards):
-  return datasets[wildcards.dataset][1]
 
 def get_group_anova(wildcards):
   ins = ["scripts/output/anova_zscore/{}_{}_anova_out_S_{}_z_{}_b_{}{}.tsv".format(wildcards.dataset,z_col,wildcards.pinS,wildcards.pinz,wildcards.bound,suff),"scripts/output/anova_zscore/{}_{}_anova_coeff_S_{}_z_{}_b_{}{}.tsv".format(wildcards.dataset,z_col,wildcards.pinS,wildcards.pinz,wildcards.bound,suff)]
@@ -108,15 +100,16 @@ def get_group_list(wildcards):
     return " ".join(all_groups[wildcards.dataset])
 
 def get_infile(wildcards):
-  if datasets[wildcards.dataset][0] == "10x":
-    return "data/{}.pq".format(wildcards.dataset)
-
-  elif datasets[wildcards.dataset][0] == "ss2":
-    return "data/{}.pq".format(wildcards.dataset)
+  return "data/{}.pq".format(wildcards.dataset)
+#  if datasets[wildcards.dataset][0] == "10x":
+#    return "data/{}.pq".format(wildcards.dataset)
+#
+#  elif datasets[wildcards.dataset][0] == "ss2":
+#    return "data/{}.pq".format(wildcards.dataset)
 
 def get_all_infiles(datasets):
   outputs = []
-  for dataset in datasets.keys():
+  for dataset in datasets:
     if datasets[dataset][0] == "10x":
       outputs.append("data/{}.pq".format(dataset))
   
@@ -125,12 +118,15 @@ def get_all_infiles(datasets):
   return outputs
 print(get_SVD(datasets))
 
+print(expand("scripts/output/variance_adjusted_permutations/{dataset}_pval-sep-ontology-sep-tiss_comp-sep-" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets,pinS=pins_S,pinz=pins_z,bound=bounds))
 rule all:         
   input:
 #    get_rijk_zscores(datasets),
 #    get_SVD(datasets),
 #    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
-    expand("scripts/output/variance_adjusted_permutations/{dataset}_outdf_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets,pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets,pinS=pins_S,pinz=pins_z,bound=bounds),
+
 
 #    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
 #    get_sig(datasets, bounds),
@@ -397,5 +393,36 @@ rule var_adj_perm_pval:
   shell:
     """
     python3.6 -u scripts/variance_adjusted_permutations.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
+
+
+    """
+
+rule var_adj_perm_pval_bytiss:
+  input:
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+
+  output:
+    "scripts/output/variance_adjusted_permutations/{dataset}_pvals_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",
+    "scripts/output/variance_adjusted_permutations/{dataset}_outdf_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 20000,
+
+    time_min=lambda wildcards, attempt: attempt * 60 * 20
+  log:
+    out="job_output/var_adj_perm_pval_bytiss_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.out",
+    err="job_output/var_adj_perm_pval_bytiss_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.err"
+
+#  wildcard_constraints:
+#    group="ontology"
+   
+  params:
+    suffix="_S_{pinS}_z_{pinz}_b_{bound}" + suff,
+    num_perms=num_perms
+
+  shell:
+    """
+    python3.6 -u scripts/variance_adjusted_permutations_bytiss.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  --group_col {wildcards.group} --sub_col {wildcards.sub} 1>> {log.out} 2>> {log.err}
+
 
     """
