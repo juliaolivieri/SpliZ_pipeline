@@ -22,7 +22,7 @@ def get_args():
 
 #  parser.add_argument("--bound_lower",action="store_true",help="include lower bound on number of junctional reads a cell + gene needs to have in order to get a z score")
 
-  parser.add_argument("--lower_bound",type=int,help="only include cell/gene pairs the have at least this many junctional reads for the gene")
+  parser.add_argument("--lower_bound",type=int,help="only include cell/gene pairs the have more than this many junctional reads for the gene")
 
 
   args = parser.parse_args()

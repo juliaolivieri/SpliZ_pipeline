@@ -1,4 +1,4 @@
-datasets = ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung"]
+datasets = ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung","HLCA_smartseq_P2_with_postprocessing","HLCA_smartseq_P3_with_postprocessing"]
 
 num_perms = 100
 
