@@ -1,8 +1,10 @@
-# SZS Pipeline
+# SpliZ Pipeline
 
-This repository contains code to perform the analyses in the paper ["The SZS is a robust and efficient method to identify regulated splicing events in droplet-based RNA Sequencing" (Olivieri, Dehghannasiri, and Salzman 2020)](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v1.abstract). 
+![Pipeline](splice_summary.tif)
 
-This pipeline takes the output from [SICILIAN](https://github.com/salzmanlab/SICILIAN) and returns the SZS for each gene and cell, as well as analyses of differential alternative splicing.
+This repository contains code to perform the analyses in the paper ["The SpliZ generalizes “Percent Spliced In” to reveal regulated splicing at single-cellresolution" (Olivieri, Dehghannasiri, and Salzman 2021)](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v2.full.pdf). 
+
+This pipeline takes the output from [SICILIAN](https://github.com/salzmanlab/SICILIAN) and returns the SpliZ for each gene and cell, as well as analyses of differential alternative splicing.
 
 ![Pipeline](pipeline.png)
 
@@ -10,26 +12,38 @@ This pipeline takes the output from [SICILIAN](https://github.com/salzmanlab/SIC
 ## Installation and setup
 
 Clone this repository:
-`git clone https://github.com/juliaolivieri/SZS_pipeline`
+`$ git clone https://github.com/juliaolivieri/SpliZ_pipeline.git`
 
-`cd SZS_pipeline/`
+`$ cd SpliZ_pipeline/`
 
-Ensure that conda is working on your system. If you are working on sherlock on the horence partition, you can try adding `export PATH="/share/PI/horence/applications/anaconda3/bin/:$PATH"` to your .bashrc.
-
+Ensure that conda is working on your system. <!-- If you are working on sherlock on the horence partition, you can try adding `export PATH="/share/PI/horence/applications/anaconda3/bin/:$PATH"` to your .bashrc. -->
 Then set up the conda environment from the environment.yml file:
 
-`conda env create --name szs_env --file=environment.yml`
+`$ conda env create --name spliz_env --file=environment.yml`
 
 and activate it:
 
-` source activate szs_env`
+`$ source activate spliz_env`
 
-If this activation step doesn't work, try running `conda env list` and looking for the path that ends with `szs_env`. Then run `source activate <full path>`, for example `source activate /share/PI/horence/applications/anaconda3/envs/szs_env`.
+If this activation step doesn't work, try running `conda env list` and looking for the path that ends with `spliz_env`. Then run `source activate <full path>`. <!-- , for example `source activate /share/PI/horence/applications/anaconda3/envs/spliz_env`. >
 
-You will need to place the following files in the "data" directory (read on for where to find them if you are working on Sherlock with access to the horence partition):
+## Running the pipeline on test data
+
+Use the following command to run the pipeline on the small test dataset (labeled `test` in the `data` folder):
+
+`snakemake -p --config datasets="test" --restart-times 0`
+
+This should take less than 5 minutes to run on a local computer with at least 3 Gb free space.
+
+You can check the output file `scripts/output/variance_adjusted_permutations/test_pvals_compartment-tissue_100_S_0.1_z_0.0_b_5.tsv` against the sample output file `test_pvals_compartment-tissue_100_S_0.1_z_0.0_b_5.tsv` in the main directory.
+
+## Downloading data from paper
+
+You will need to place the following files in the "data" directory, accessible on figshare:
 * `HLCA4_P2_10x_with_postprocessing_lung.pq`
 * `HLCA4_P3_10x_with_postprocessing_lung.pq`
 
+<!--
 And the following file in the util_files directory:
 * `GRCh38_latest_genomic.gtf`
 
@@ -42,6 +56,7 @@ and
 `cp /oak/stanford/groups/horence/JuliaO/gtf_files/GRCh38_latest_genomic.gtf util_files/`
 
 to get these files.
+-->
 
 ## Running the pipeline
 
