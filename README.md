@@ -1,6 +1,6 @@
 # SpliZ Pipeline
 
-![Pipeline](splice_summary.tif)
+![Pipeline](splice_summary.jpg)
 
 This repository contains code to perform the analyses in the paper ["The SpliZ generalizes “Percent Spliced In” to reveal regulated splicing at single-cellresolution" (Olivieri, Dehghannasiri, and Salzman 2021)](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v2.full.pdf). 
 
