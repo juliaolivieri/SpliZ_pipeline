@@ -25,7 +25,7 @@ and activate it:
 
 `$ source activate spliz_env`
 
-If this activation step doesn't work, try running `conda env list` and looking for the path that ends with `spliz_env`. Then run `source activate <full path>`. <!-- , for example `source activate /share/PI/horence/applications/anaconda3/envs/spliz_env`. >
+If this activation step doesn't work, try running `conda env list` and looking for the path that ends with `spliz_env`. Then run `source activate <full path>`. <!-- for example `source activate /share/PI/horence/applications/anaconda3/envs/spliz_env`. -->
 
 ## Running the pipeline on test data
 
