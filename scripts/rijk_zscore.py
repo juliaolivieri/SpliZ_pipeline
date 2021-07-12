@@ -2,7 +2,6 @@ import argparse
 import datetime 
 import numpy as np
 import pandas as pd
-import pickle
 import time
 from tqdm import tqdm
 import warnings
@@ -153,6 +152,8 @@ def main():
  # print("RPL29 shape B",df[df["geneR1A_uniq"] == "RPL29"].shape)
 
   # use second location gene name if first is unknown
+
+#  if "refName_newR1" in df.columns:
   df["geneR1B_uniq"] = df["refName_newR1"].str.split("|").str[1].str.split(":").str[1]
   idx = df[(df["geneR1A_uniq"].isin(["unknown",""])) | (df["geneR1A_uniq"].isna())].index
   df.loc[idx,"geneR1A_uniq"] = df.loc[idx,"geneR1B_uniq"]
