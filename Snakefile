@@ -1,5 +1,10 @@
-datasets = ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung","HLCA_smartseq_P2_with_postprocessing","HLCA_smartseq_P3_with_postprocessing"]
+configfile: "config.yaml"
+#print(config["config["datasets"]"])
+#config["datasets"] = ["HLCA4_P2_10x_with_postprocessing_lung","HLCA4_P3_10x_with_postprocessing_lung","HLCA_smartseq_P2_with_postprocessing","HLCA_smartseq_P3_with_postprocessing"]
+#
+#config["datasets"] = ["test"]
 
+print(config["datasets"])
 num_perms = 100
 
 # filter by SICILIAN v2
@@ -101,10 +106,10 @@ def get_group_list(wildcards):
 
 def get_infile(wildcards):
   return "data/{}.pq".format(wildcards.dataset)
-#  if datasets[wildcards.dataset][0] == "10x":
+#  if config["datasets"][wildcards.dataset][0] == "10x":
 #    return "data/{}.pq".format(wildcards.dataset)
 #
-#  elif datasets[wildcards.dataset][0] == "ss2":
+#  elif config["datasets"][wildcards.dataset][0] == "ss2":
 #    return "data/{}.pq".format(wildcards.dataset)
 
 def get_all_infiles(datasets):
@@ -116,22 +121,22 @@ def get_all_infiles(datasets):
     elif datasets[dataset][0] == "ss2":
       outputs.append("data/{}.pq".format(dataset))
   return outputs
-print(get_SVD(datasets))
+print(get_SVD(config["datasets"]))
 
-print(expand("scripts/output/variance_adjusted_permutations/{dataset}_pval-sep-ontology-sep-tiss_comp-sep-" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets,pinS=pins_S,pinz=pins_z,bound=bounds))
+print(expand("scripts/output/variance_adjusted_permutations/{dataset}_pval-sep-ontology-sep-tiss_comp-sep-" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds))
 rule all:         
   input:
-#    get_rijk_zscores(datasets),
-#    get_SVD(datasets),
-#    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
-    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets,pinS=pins_S,pinz=pins_z,bound=bounds),
-    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets,pinS=pins_S,pinz=pins_z,bound=bounds),
+#    get_rijk_zscores(config["datasets"]),
+#    get_SVD(config["datasets"]),
+#    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"].keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
 
 
-#    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=datasets.keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
-#    get_sig(datasets, bounds),
-#    get_anova(datasets),
-#    get_FDR(datasets)
+#    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"].keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
+#    get_sig(config["datasets"], bounds),
+#    get_anova(config["datasets"]),
+#    get_FDR(config["datasets"])
 #
 rule pq_to_tsv_SVD:
   input:
