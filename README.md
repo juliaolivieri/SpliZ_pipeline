@@ -2,7 +2,7 @@
 
 ![Pipeline](splice_summary.jpg)
 
-This repository contains code to perform the analyses in the paper ["The SpliZ generalizes “Percent Spliced In” to reveal regulated splicing at single-cellresolution" (Olivieri, Dehghannasiri, and Salzman 2021)](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v2.full.pdf). 
+This repository contains code to perform the analyses in the paper ["The SpliZ generalizes “Percent Spliced In” to reveal regulated splicing at single-cell resolution" (Olivieri, Dehghannasiri, and Salzman 2021)](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v2). 
 
 This pipeline takes the output from [SICILIAN](https://github.com/salzmanlab/SICILIAN) and returns the SpliZ for each gene and cell, as well as analyses of differential alternative splicing.
 
@@ -27,6 +27,8 @@ and activate it:
 
 If this activation step doesn't work, try running `conda env list` and looking for the path that ends with `spliz_env`. Then run `source activate <full path>`. <!-- for example `source activate /share/PI/horence/applications/anaconda3/envs/spliz_env`. -->
 
+This whole process should take less than 5 minutes on a normal computer.
+
 ## Running the pipeline on test data
 
 Use the following command to run the pipeline on the small test dataset (labeled `test` in the `data` folder):
@@ -39,7 +41,7 @@ You can check the output file `scripts/output/variance_adjusted_permutations/tes
 
 ## Downloading data from paper
 
-You will need to place the following files in the "data" directory, accessible on figshare:
+You will need to place the following files in the "data" directory, accessible on [figshare](https://figshare.com/articles/dataset/Tables_and_Data_for_SpliZ_Manuscript/14378819):
 * `HLCA4_P2_10x_with_postprocessing_lung.pq`
 * `HLCA4_P3_10x_with_postprocessing_lung.pq`
 
@@ -77,7 +79,22 @@ There is also output in `scripts/output/perm_pvals/*_fdr_10_0.1_z_0.0_b_5.tsv` i
 ## Input file format
 This pipeline works with the "class input file" output of the [SICILIAN pipeline](https://github.com/salzmanlab/SICILIAN). To run the pipeline without running SICILIAN first, your data must be in the following format: one row per gene per splice junction, with a column indicating the cell, the donor position of the splice junction, the acceptor position of the splice junction, and the number of reads mapping to that splice junction. For differential alternative splicing analysis, the file must also include the metadata for different cell groups (cell type, tissue, compartment, etc).
 
+## Software dependencies
+
+These are also found in the `environment.yaml` file.
+
+```
+        - python=3.6.7
+        - pandas=1.0.4
+        - tqdm=4.46.0
+        - numpy=1.18.4
+        - snakemake-minimal=5.4.5=py_0
+        - pyarrow=0.15.1
+        - scipy=1.4.1
+        - statsmodels=0.11.1
+```
+
 ## References
-Olivieri, Dehghannasiri, and Salzman. "The SZS is an efficient statistical method to identify regulated splicing events in droplet-based RNA sequencing." bioRxiv. (2020) [https://www.biorxiv.org/content/10.1101/2020.11.10.377572v1.abstract](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v1.abstract).
+Olivieri, Dehghannasiri, and Salzman. "The SpliZ generalizes “Percent Spliced In” to reveal regulated splicing at single-cell resolution." bioRxiv. (2020) [https://www.biorxiv.org/content/10.1101/2020.11.10.377572v2](https://www.biorxiv.org/content/10.1101/2020.11.10.377572v2).
 
 Dehghannasiri, Olivieri, and Salzman. "Specific splice junction detection in single cells with SICILIAN," bioRxiv. (2020) [https://www.biorxiv.org/content/10.1101/2020.04.14.041905v1](https://www.biorxiv.org/content/10.1101/2020.04.14.041905v1).

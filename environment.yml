@@ -11,3 +11,6 @@ dependencies:
   - pyarrow=0.15.1
   - scipy=1.4.1
   - statsmodels=0.11.1
+  - r-base=4.0.2
+  - r-data.table=1.14.0
+  - r-rfast=2.0.3

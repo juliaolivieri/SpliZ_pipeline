@@ -131,6 +131,8 @@ rule all:
 #    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"].keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
     expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
     expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/SpliZsites/third_evec_{dataset}_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/SpliZsites/third_evec_{dataset}_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds)
 
 
 #    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"].keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
@@ -430,4 +432,25 @@ rule var_adj_perm_pval_bytiss:
     python3.6 -u scripts/variance_adjusted_permutations_bytiss.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  --group_col {wildcards.group} --sub_col {wildcards.sub} 1>> {log.out} 2>> {log.err}
 
 
+    """
+
+rule splizsites:
+  input:
+    "scripts/output/variance_adjusted_permutations/{dataset}_pvals_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+  output: 
+    "scripts/output/SpliZsites/third_evec_{dataset}_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 20000,
+    time_min=lambda wildcards, attempt: attempt * 60 * 20
+  log:
+    out="job_output/splizsites_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.out",
+    err="job_output/splizsites_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.err"
+
+  params:
+    suffix = "_S_{pinS}_z_{pinz}_b_{bound}" + suff,
+    pvals = "scripts/output/variance_adjusted_permutations/{dataset}_pvals_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",
+    num_perms = num_perms
+  shell:
+    """
+    Rscript scripts/find_SpliZsites.R _{wildcards.dataset}{params.suffix}.tsv {wildcards.dataset}_{wildcards.group}-{wildcards.sub}_{params.num_perms}{params.suffix}.tsv {params.pvals} scripts/output/rijk_zscore/SVD_normdonor/ scripts/output/SpliZsites/ 1>> {log.out} 2>> {log.err} 
     """
