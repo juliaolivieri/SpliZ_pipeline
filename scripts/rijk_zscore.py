@@ -113,7 +113,11 @@ def main():
   args = get_args()
   outpath = "scripts/output/rijk_zscore/"
 
-  df = pd.read_parquet(args.parquet,columns=["juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","splice_ann","tissue","compartment","free_annotation","refName_newR1","called","chrR1A","exon_annR1A","exon_annR1B"])
+  df = pd.read_parquet(args.parquet,columns=["juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","splice_ann","tissue","compartment","free_annotation","refName_newR1","called","chrR1A","exon_annR1A","exon_annR1B","strand"])
+
+  df["refName"] = df["chrR1A"] + "_" + df["geneR1A_uniq"] + "_" + df["juncPosR1A"].astype(str) + "_" + df["juncPosR1B"].astype(str)
+  if "splice_ann" not in df.columns:
+    df["splice_ann"] = False
   if args.verbose:
     print("read in parquet",datetime.timedelta(seconds = time.time() - t0))
   if "missing_domains" in df.columns and not args.light:
@@ -133,7 +137,7 @@ def main():
   if args.unfilt:
 
     # only include junctions with more than 1 read in the dataset
-    df["numReads_tot"] = df.groupby("refName_newR1")["numReads"].transform("sum")
+    df["numReads_tot"] = df.groupby("refName")["numReads"].transform("sum")
     df = df[df["numReads_tot"] > 1]
 
   elif args.v2:
@@ -153,10 +157,10 @@ def main():
 
   # use second location gene name if first is unknown
 
-#  if "refName_newR1" in df.columns:
-  df["geneR1B_uniq"] = df["refName_newR1"].str.split("|").str[1].str.split(":").str[1]
-  idx = df[(df["geneR1A_uniq"].isin(["unknown",""])) | (df["geneR1A_uniq"].isna())].index
-  df.loc[idx,"geneR1A_uniq"] = df.loc[idx,"geneR1B_uniq"]
+  if "refName_newR1" in df.columns:
+    df["geneR1B_uniq"] = df["refName_newR1"].str.split("|").str[1].str.split(":").str[1]
+    idx = df[(df["geneR1A_uniq"].isin(["unknown",""])) | (df["geneR1A_uniq"].isna())].index
+    df.loc[idx,"geneR1A_uniq"] = df.loc[idx,"geneR1B_uniq"]
 
   bin_size = 100000
   # bin unknown genes
@@ -168,16 +172,21 @@ def main():
     print("replace with geneR1B",datetime.timedelta(seconds = time.time() - t0))
 
   # get sign of gene to adjust z score
-  sign_df = df.drop_duplicates("geneR1A_uniq")
-  sign_df["strandA"] = sign_df["refName_newR1"].str.split("|").str[0].str.split(":").str[3]
-  sign_df["strandB"] = sign_df["refName_newR1"].str.split("|").str[1].str.split(":").str[3]
-  idx = sign_df[sign_df["strandA"] == "?"].index
-  sign_df.loc[idx,"strandA"] = sign_df.loc[idx,"strandB"]
-  sign_df["sign"] = 1
-  sign_df.loc[sign_df["strandA"] == "-","sign"] = -1
-  sign_df[["geneR1A_uniq","strandA","sign"]]
-  sign_dict = pd.Series(sign_df.sign.values,index=sign_df.geneR1A_uniq).to_dict()
-  df["sign"] = df["geneR1A_uniq"].map(sign_dict).fillna(1)
+  if "refName_newR1" in df.columns:
+    sign_df = df.drop_duplicates("geneR1A_uniq")
+    sign_df["strandA"] = sign_df["refName_newR1"].str.split("|").str[0].str.split(":").str[3]
+    sign_df["strandB"] = sign_df["refName_newR1"].str.split("|").str[1].str.split(":").str[3]
+    idx = sign_df[sign_df["strandA"] == "?"].index
+    sign_df.loc[idx,"strandA"] = sign_df.loc[idx,"strandB"]
+    sign_df["sign"] = 1
+    sign_df.loc[sign_df["strandA"] == "-","sign"] = -1
+    sign_df[["geneR1A_uniq","strandA","sign"]]
+    sign_dict = pd.Series(sign_df.sign.values,index=sign_df.geneR1A_uniq).to_dict()
+    df["sign"] = df["geneR1A_uniq"].map(sign_dict).fillna(1)
+  else:
+    df["sign"] = 1
+    df.loc[df["strand"] == "-","sign"] = -1
+
   if args.verbose:
     print("get sign",datetime.timedelta(seconds = time.time() - t0))
 
@@ -260,7 +269,7 @@ def main():
       print("calc_z",datetime.timedelta(seconds = time.time() - t0))
 
     ############## end modify Sijk ####################
-    df["cell_gene_junc"] = df["cell_gene"] + df["refName_newR1"]
+    df["cell_gene_junc"] = df["cell_gene"] + df["refName"]
 
     if not args.light:
       # calculate the z score
@@ -275,8 +284,8 @@ def main():
       df["temp"] = df["x_sijk"] / np.sqrt(df["denom_sq"])
       df["temp_mag"] = abs(df["temp"])
       df["idxmax_z"] = df["cell_gene"].map(df.groupby("cell_gene")["temp_mag"].idxmax())
-      map_df = df.loc[df["idxmax_z"],["cell_gene","refName_newR1","temp"]]
-      df["junc_max_{}".format(let)] = df["cell_gene"].map(pd.Series(map_df.refName_newR1.values,index=map_df.cell_gene).to_dict())
+      map_df = df.loc[df["idxmax_z"],["cell_gene","refName","temp"]]
+      df["junc_max_{}".format(let)] = df["cell_gene"].map(pd.Series(map_df.refName.values,index=map_df.cell_gene).to_dict())
       df["max_don_z_{}".format(let)] = df["cell_gene"].map(pd.Series(map_df.temp.values,index=map_df.cell_gene).to_dict())
 
 #    # break down z score by annotation

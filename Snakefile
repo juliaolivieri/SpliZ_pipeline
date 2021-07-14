@@ -129,6 +129,7 @@ rule all:
 #    get_rijk_zscores(config["datasets"]),
 #    get_SVD(config["datasets"]),
 #    expand("scripts/output/perm_pvals/{dataset}_fdr_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"].keys(),pinS=pins_S,pinz=pins_z,bound=bounds),
+#    expand("data/{dataset}.pq",dataset=config["datasets"])
     expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
     expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
     expand("scripts/output/SpliZsites/third_evec_{dataset}_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
@@ -162,6 +163,27 @@ rule all:
 #     """
 #     python3.6 -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
 #     """
+
+rule tsv_to_pq:
+  input:
+    "data/{dataset}.tsv"
+
+  output:
+    "data/{dataset}.pq"
+
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 40000,
+#    mem_mb=lambda wildcards, attempt: attempt * 120000,
+
+    time_min=lambda wildcards, attempt: attempt * 60
+  log:
+    out="job_output/tsv2pq_{dataset}.out",
+    err="job_output/tsv2pq_{dataset}.err"
+
+  shell:
+    """
+    python3.6 -u scripts/parquet_to_tsv.py --parquet {output} --outname {input} --reverse 1>> {log.out} 2>> {log.err}
+    """
 
 rule pq_to_tsv:
   input:

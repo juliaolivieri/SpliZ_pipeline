@@ -1,3 +1,4 @@
+scripts/log_files/*
 data/*
 scripts/output/*
 scripts/job_output/*
