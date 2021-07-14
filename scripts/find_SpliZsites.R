@@ -19,12 +19,6 @@ output_dir = args[5]
 # output_dir = "/oak/stanford/groups/horence/Roozbeh/single_cell_project/processed_files/zscores/PCA/coordinates_to_plot_normdonor/"
 ##################################
 
-# if (dataset == "TSP1_10x"){
-#   loadings_suffix = "_TSP1_10x_with_postprocessing_nopanc_cellann_S_0.1_z_0.0_b_5.tsv"
-#   output_file_suffix = "TSP1_10x.tsv"
-#   p_value_file = "/oak/stanford/groups/horence/Roozbeh/single_cell_project/processed_files/zscores/p_val_files/TSP1_10x_with_postprocessing_nopanc_cellann_pvals_1000_S_0.1_z_0.0_b_5.tsv"
-  
-# }
 
 p_value = fread(p_value_file,sep="\t",header=TRUE)
 

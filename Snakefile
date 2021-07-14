@@ -132,34 +132,36 @@ rule all:
     expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
     expand("scripts/output/variance_adjusted_permutations/{dataset}_pvals_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
     expand("scripts/output/SpliZsites/third_evec_{dataset}_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
-    expand("scripts/output/SpliZsites/third_evec_{dataset}_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds)
-
+    expand("scripts/output/SpliZsites/third_evec_{dataset}_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + "_subcol.tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/final_summary/summary_{dataset}_ontology-tiss_comp_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
+    expand("scripts/output/final_summary/summary_{dataset}_compartment-tissue_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"],pinS=pins_S,pinz=pins_z,bound=bounds),
 
 #    expand("scripts/output/significant_genes/{dataset}-{z_col}_allp_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",dataset=config["datasets"].keys(),pinS=pins_S,pinz=pins_z,bound=bounds,z_col=["scZ"])
 #    get_sig(config["datasets"], bounds),
 #    get_anova(config["datasets"]),
 #    get_FDR(config["datasets"])
 #
-rule pq_to_tsv_SVD:
-  input:
-    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+# rule pq_to_tsv_SVD:
+#   input:
+#     "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
 
-  output:
-    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+#   output:
+#     "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
 
-  resources:
-    mem_mb=lambda wildcards, attempt: attempt * 40000,
-#    mem_mb=lambda wildcards, attempt: attempt * 120000,
+#   resources:
+#     mem_mb=lambda wildcards, attempt: attempt * 40000,
+# #    mem_mb=lambda wildcards, attempt: attempt * 120000,
 
-    time_min=lambda wildcards, attempt: attempt * 60
-  log:
-    out="job_output/pq2tsv_{dataset}_{pinS}_{pinz}_{bound}.out",
-    err="job_output/pq2tsv_{dataset}_{pinS}_{pinz}_{bound}.err"
+#     time_min=lambda wildcards, attempt: attempt * 60
+#   log:
+#     out="job_output/pq2tsv_{dataset}_{pinS}_{pinz}_{bound}.out",
+#     err="job_output/pq2tsv_{dataset}_{pinS}_{pinz}_{bound}.err"
 
-  shell:
-    """
-    python3.6 -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
-    """
+#   shell:
+#     """
+#     python3.6 -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
+#     """
 
 rule pq_to_tsv:
   input:
@@ -326,7 +328,8 @@ rule SVD_zscore:
     "scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
 
   output:
-    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq"
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".pq",
+    "scripts/output/rijk_zscore/{dataset}_sym_SVD_normdonor_S_{pinS}_z_{pinz}_b_{bound}" + suff + "_subcol.tsv"
 #    "/scratch/PI/horence/JuliaO/single_cell/Differential_Splicing/scripts/output/rijk_zscore/{dataset}_sym_S_{pinS}_z_{pinz}_b_{bound}.pq"
   resources:
 #    mem_mb=lambda wildcards, attempt: attempt * 750000,
@@ -441,7 +444,7 @@ rule splizsites:
     "scripts/output/SpliZsites/third_evec_{dataset}_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 20000,
-    time_min=lambda wildcards, attempt: attempt * 60 * 20
+    time_min=lambda wildcards, attempt: attempt * 60 * 2
   log:
     out="job_output/splizsites_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.out",
     err="job_output/splizsites_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.err"
@@ -453,4 +456,26 @@ rule splizsites:
   shell:
     """
     Rscript scripts/find_SpliZsites.R _{wildcards.dataset}{params.suffix}.tsv {wildcards.dataset}_{wildcards.group}-{wildcards.sub}_{params.num_perms}{params.suffix}.tsv {params.pvals} scripts/output/rijk_zscore/SVD_normdonor/ scripts/output/SpliZsites/ 1>> {log.out} 2>> {log.err} 
+    """
+
+rule summary:
+  input:
+    "scripts/output/variance_adjusted_permutations/{dataset}_pvals_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv",
+    "scripts/output/SpliZsites/third_evec_{dataset}_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+
+  output: 
+    "scripts/output/final_summary/summary_{dataset}_{group}-{sub}_" + str(num_perms) + "_S_{pinS}_z_{pinz}_b_{bound}" + suff + ".tsv"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 10000,
+    time_min=lambda wildcards, attempt: attempt * 60
+  log:
+    out="job_output/summary_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.out",
+    err="job_output/summary_{dataset}_{pinS}_{pinz}_{bound}_{group}_{sub}.err"
+
+  params:
+    suffix = "_S_{pinS}_z_{pinz}_b_{bound}" + suff,
+    num_perms = num_perms
+  shell:
+    """
+    python3.6 -u scripts/final_summary.py --group_col {wildcards.group} --sub_col {wildcards.sub}  --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
     """

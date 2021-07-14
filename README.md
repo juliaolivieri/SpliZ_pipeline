@@ -64,24 +64,69 @@ to get these files.
 
 Then run `snakemake -p` in the main directory (I run `snakemake -p --profile slurm` to run on sherlock). You can run `snakemake -np` first to see what jobs will be run. Each job automatically re-submits itself two times if it fails, so if you want to run without these resubmissions (for debugging purposes) you can run `snakemake -p --profile slurm --restart-times 0`.
 
-The terminal window you submit from will not be available again until after the full pipeline runs. You can use tmux to subset your termianl pane so that snakemake is only running in one box (this also allows you to detatch the session so it continues running even when terminal isn't open). For the tmux approach you will have to always log in to the same node on sherlock so you can reconnect to the same session (for example, `ssh jolivier@sh02-ln04.stanford.edu`). 
+The terminal window you submit from will not be available again until after the full pipeline runs. You can use tmux to subset your termianl pane so that snakemake is only running in one box (this also allows you to detatch the session so it continues running even when terminal isn't open). For the tmux approach you will have to always log in to the same node on sherlock so you can reconnect to the same session. 
 
-The pipeline should take around one hour to run.
+The pipeline should take around one hour to run on the full dataset.
 
-To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). If you are working on sherlock using the horence partition, you can try copying the folder `/oak/stanford/groups/horence/JuliaO/snakemake/` to `~/.config` by running `cp -r /oak/stanford/groups/horence/JuliaO/snakemake ~/.config/` instead. You can then edit `~/.config/snakemake/slurm/slurm-submit.py` to change the `SBATCH_DEFAULTS` variable if you want (the current defaults are to use the partitions owners and horence, 10 minutes of time, and 4Gb of memory). All of the time and memory requirements for the SZS pipeline are specified in the script itself, so you don't need to change these variables if you're only running this pipeline.
-
-## Output
-
-The output file will be `scripts/output/rijk_zscore/<dataname>_sym_SVD_normgene_S_0.1_z_0.0_b_5.tsv`. The column `cell` indicates the cell, `geneR1A_uniq` is the gene name, `scZ` is the original SZS, and `svd_z0`, `svd_z1`, and `svd_z2` are the three z scores based on the first three SVD components. Note that this file has multiple lines for each gene + cell, so if you are just interested in the SZS you can deduplicate by cell + gene.
-
-There is also output in `scripts/output/perm_pvals/*_fdr_10_0.1_z_0.0_b_5.tsv` including a p value calculated based on permutations (`quant_pval`) for each gene and ontology based on the `scZ`.
+To set up snakemake to run on slurm, you can follow the directions here: [https://github.com/Snakemake-Profiles/slurm](https://github.com/Snakemake-Profiles/slurm). <!-- If you are working on sherlock using the horence partition, you can try copying the folder `/oak/stanford/groups/horence/JuliaO/snakemake/` to `~/.config` by running `cp -r /oak/stanford/groups/horence/JuliaO/snakemake ~/.config/` instead. You can then edit `~/.config/snakemake/slurm/slurm-submit.py` to change the `SBATCH_DEFAULTS` variable if you want (the current defaults are to use the partitions owners and horence, 10 minutes of time, and 4Gb of memory). --> All of the time and memory requirements for the SpliZ pipeline are specified in the script itself, so you don't need to change these variables if you're only running this pipeline.
 
 ## Input file format
-This pipeline works with the "class input file" output of the [SICILIAN pipeline](https://github.com/salzmanlab/SICILIAN). To run the pipeline without running SICILIAN first, your data must be in the following format: one row per gene per splice junction, with a column indicating the cell, the donor position of the splice junction, the acceptor position of the splice junction, and the number of reads mapping to that splice junction. For differential alternative splicing analysis, the file must also include the metadata for different cell groups (cell type, tissue, compartment, etc).
+This pipeline works with the "class input file" output of the [SICILIAN pipeline](https://github.com/salzmanlab/SICILIAN). To run the pipeline without running SICILIAN first, your data must be in the following format:
+ one row per gene per splice junction, with a column indicating the cell, the donor position of the splice junction, the acceptor position of the splice junction, and the number of reads mapping to that splice junction. For differential alternative splicing analysis, the file must also include the metadata for different cell groups (cell type, tissue, compartment, etc).
+
+## Output files
+
+### SpliZ values
+
+The SpliZ values for the dataset can be found in this output file:
+
+* `scripts/output/rijk_zscore/<dataname>_sym_SVD_normdonor_S_0.1_z_0.0_b_5_subcol.tsv` (for test, `scripts/output/rijk_zscore/test_sym_SVD_normdonor_S_0.1_z_0.0_b_5_subcol.tsv`)
+
+This output file has one line per cell per gene with enough spliced reads to calculate a SpliZ value. The column values are:
+
+* `cell`: The cell identifier
+* `geneR1A_uniq`: The gene
+* `tissue`, `compartment`, `free_annotation`, `ontology`: Metadata columns associating each cel with a cell type
+* `scZ`: SpliZ value
+* `n.g_A`: Number of reads mapping to the "A" splice sites used for the SpliZ calculation in this gene and this cell
+* `n.g_B`: Number of reads mapping to the "B" splice sites used for the SpliZ calculation in this gene and this cell
+* `svd_z0`: The SpliZVD score based on the first eigenvector
+* `svd_z1`: The SpliZVD score based on the second eigenvector
+* `svd_z2`: The SpliZVD score based on the third eigenvector
+
+### Differential SpliZ analysis
+
+Results of the differential SpliZ analysis can be found in this file:
+
+* `scripts/output/final_summary/summary_<dataname>_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv` (for test, `scripts/output/final_summary/summary_test_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv`)
+
+There is one row per gene per group and cell type. The columns of the file are defined as follows:
+
+* `gene`: the gene name
+* `sub_col`: The metadata column the data was subset on for analysis (in this example, `tiss_comp`)
+* `group_col`:  The metadata column differential analysis was performed on with `sub_col` (in this example, `ontology`)
+* `SpliZsites`: The SpliZsites isolated for this gene by the first three eigenvectors (separated by commas)
+* `<z_col>_median`: The median of the SpliZ(VD) values for the given `gene`, `sub_col`, and `group_col`. `z_col` can be `scZ`, `svd_z0`, `svd_z1`, or `svd_z2`.
+* `<z_col>_pval`: The BH adjusted p value of the SpliZ(VD) values for the given `gene` and `sub_col`.`z_col` can be `scZ`, `svd_z0`, `svd_z1`, or `svd_z2`.
+
+### SpliZsites
+
+A separate file is created based on each of the first three eigenvectors:
+
+* `scripts/output/SpliZsites/<dataname>_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv` (for test, `scripts/output/SpliZsites/test_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv`)
+* `scripts/output/SpliZsites/second_evec_<dataname>_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv` (for test, `scripts/output/SpliZsites/second_evec_test_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv`)
+* `scripts/output/SpliZsites/third_evec_<dataname>_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv` (for test, `scripts/output/SpliZsites/third_evec_test_ontology-tiss_comp_100_S_0.1_z_0.0_b_5.tsv`)
+
+Each of these files contains the following columns:
+
+* `gene`: gene name
+* `let`: Either A or B depending on whether the splice site is 3' or 5'
+* `end`: the SpliZsite coordinate that is one of the most variable for this splice site
+
 
 ## Software dependencies
 
-These are also found in the `environment.yaml` file.
+These are also found in the `environment.yml` file.
 
 ```
         - python=3.6.7

@@ -135,6 +135,13 @@ def main():
     sub_cols = sub_cols + ["tissue","compartment","free_annotation","ontology"]
   if args.temp:
     df.drop_duplicates("cell_gene")[sub_cols].to_csv("{}{}_sym_S_{}_z_{}_b_{}{}_subcol.tsv".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff),index=False,sep="\t")
+
+  sub_cols = ["cell","geneR1A_uniq","tissue","compartment","free_annotation","ontology","scZ","n.g_A","n.g_B","svd_z0","svd_z1","svd_z2"] 
+  print("{}{}_sym_SVD_S_{}_z_{}_b_{}{}_subcol.tsv".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff))
+  df.drop_duplicates("cell_gene")[sub_cols].to_csv("{}{}_sym_SVD_normdonor_S_{}_z_{}_b_{}{}_subcol.tsv".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff),index=False,sep="\t")
+
+  df.to_parquet("{}{}_sym_S_{}_z_{}_b_{}{}.pq".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff))
+
   if args.temp:
     df.to_parquet("{}{}_sym_S_{}_z_{}_b_{}{}.pq".format(outpath,args.dataname,args.pinning_S, args.pinning_z, args.lower_bound, suff))
   else:
