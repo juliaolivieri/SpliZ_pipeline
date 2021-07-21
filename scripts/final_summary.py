@@ -22,8 +22,8 @@ def main():
   pval_df = pd.read_csv("{}variance_adjusted_permutations/{}_pvals_{}-{}_{}{}.tsv".format(in_dir, args.dataname,args.group_col,args.sub_col,args.num_perms, args.suffix), sep = "\t")
   
   splizsite_dfs = []
-  for prefix in ["","second_","third_"]:
-    splizsite_dfs.append(pd.read_csv("{}SpliZsites/{}_{}-{}_{}{}.tsv".format(in_dir,args.dataname,args.group_col,args.sub_col,args.num_perms, args.suffix),sep="\t"))
+  for prefix in ["","second_evec_","third_evec_"]:
+    splizsite_dfs.append(pd.read_csv("{}SpliZsites/{}{}_{}-{}_{}{}.tsv".format(in_dir,prefix,args.dataname,args.group_col,args.sub_col,args.num_perms, args.suffix),sep="\t"))
   splizsite_df = pd.concat(splizsite_dfs,axis=0).drop_duplicates()
   
   df = pd.read_csv("{}rijk_zscore/{}_sym_SVD_normdonor{}_subcol.tsv".format(in_dir,args.dataname,args.suffix),sep="\t")
