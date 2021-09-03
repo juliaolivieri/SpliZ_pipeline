@@ -161,8 +161,29 @@ rule all:
 
 #   shell:
 #     """
-#     python3.6 -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
+#     python -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
 #     """
+#
+rule txt_to_pq:
+  input:
+    "data/{dataset}.txt"
+
+  output:
+    "data/{dataset}.pq"
+
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 40000,
+#    mem_mb=lambda wildcards, attempt: attempt * 120000,
+
+    time_min=lambda wildcards, attempt: attempt * 60
+  log:
+    out="job_output/txt2pq_{dataset}.out",
+    err="job_output/txt2pq_{dataset}.err"
+
+  shell:
+    """
+    python -u scripts/parquet_to_tsv.py --parquet {output} --outname {input} --reverse 1>> {log.out} 2>> {log.err}
+    """
 
 rule tsv_to_pq:
   input:
@@ -182,7 +203,7 @@ rule tsv_to_pq:
 
   shell:
     """
-    python3.6 -u scripts/parquet_to_tsv.py --parquet {output} --outname {input} --reverse 1>> {log.out} 2>> {log.err}
+    python -u scripts/parquet_to_tsv.py --parquet {output} --outname {input} --reverse 1>> {log.out} 2>> {log.err}
     """
 
 rule pq_to_tsv:
@@ -203,7 +224,7 @@ rule pq_to_tsv:
 
   shell:
     """
-    python3.6 -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
+    python -u scripts/parquet_to_tsv.py --parquet {input} --outname {output} 1>> {log.out} 2>> {log.err}
     """
 
 rule FDR_anova:
@@ -233,8 +254,8 @@ rule FDR_anova:
 
   shell:
     """
-    python3.6 -u scripts/final_FDRs_anova.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
-    python3.6 -u scripts/final_FDRs_anova_factor.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
+    python -u scripts/final_FDRs_anova.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
+    python -u scripts/final_FDRs_anova_factor.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
 
     """
 
@@ -259,7 +280,7 @@ rule significance:
 
   shell:
     """
-    python3.6 -u scripts/significant_genes.py --dataname {wildcards.dataset} --z_col {params.z_col} --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --lower_bound {wildcards.bound}  {params.unfilt} 1>> {log.out} 2>> {log.err}
+    python -u scripts/significant_genes.py --dataname {wildcards.dataset} --z_col {params.z_col} --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --lower_bound {wildcards.bound}  {params.unfilt} 1>> {log.out} 2>> {log.err}
     """
 
 rule FDR_mz:
@@ -285,7 +306,7 @@ rule FDR_mz:
 
   shell:
     """
-    python3.6 -u scripts/final_FDRs_mz.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
+    python -u scripts/final_FDRs_mz.py  --dataname {wildcards.dataset} --suffix {params.suffix} --all_datanames {params.all_datanames} 1>> {log.out}  2>> {log.err}
     """
 
 rule anova:
@@ -342,7 +363,7 @@ rule rijk_zscore:
 
   shell:
     """
-    python3.6 -u scripts/rijk_zscore.py {params.ver} --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset} --parquet {input} --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
+    python -u scripts/rijk_zscore.py {params.ver} --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset} --parquet {input} --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
     """
 
 rule SVD_zscore:
@@ -370,7 +391,7 @@ rule SVD_zscore:
 
   shell:
     """
-    python3.6 -u scripts/SVD_zscore.py {params.ver} --svd_type normdonor --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset}  --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
+    python -u scripts/SVD_zscore.py {params.ver} --svd_type normdonor --pinning_S {wildcards.pinS} --pinning_z {wildcards.pinz} --dataname {wildcards.dataset}  --lower_bound {wildcards.bound} {params.verbose} {params.light} {params.unfilt} 1>> {log.out} 2>> {log.err}
     """
 
 rule perm_pval:
@@ -395,10 +416,10 @@ rule perm_pval:
 
   shell:
     """
-    python3.6 -u scripts/perm_pvals.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} --z_col scZ 1>> {log.out} 2>> {log.err}
-    python3.6 -u scripts/perm_pvals.py --z_col svd_z0 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
-    python3.6 -u scripts/perm_pvals.py --z_col svd_z1 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
-    python3.6 -u scripts/perm_pvals.py --z_col svd_z2 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+    python -u scripts/perm_pvals.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} --z_col scZ 1>> {log.out} 2>> {log.err}
+    python -u scripts/perm_pvals.py --z_col svd_z0 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+    python -u scripts/perm_pvals.py --z_col svd_z1 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
+    python -u scripts/perm_pvals.py --z_col svd_z2 --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms} 1>> {log.out} 2>> {log.err}
 
     """
 
@@ -424,7 +445,7 @@ rule var_adj_perm_pval:
 
   shell:
     """
-    python3.6 -u scripts/variance_adjusted_permutations.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
+    python -u scripts/variance_adjusted_permutations.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
 
 
     """
@@ -454,7 +475,7 @@ rule var_adj_perm_pval_bytiss:
 
   shell:
     """
-    python3.6 -u scripts/variance_adjusted_permutations_bytiss.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  --group_col {wildcards.group} --sub_col {wildcards.sub} 1>> {log.out} 2>> {log.err}
+    python -u scripts/variance_adjusted_permutations_bytiss.py --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  --group_col {wildcards.group} --sub_col {wildcards.sub} 1>> {log.out} 2>> {log.err}
 
 
     """
@@ -499,5 +520,5 @@ rule summary:
     num_perms = num_perms
   shell:
     """
-    python3.6 -u scripts/final_summary.py --group_col {wildcards.group} --sub_col {wildcards.sub}  --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
+    python -u scripts/final_summary.py --group_col {wildcards.group} --sub_col {wildcards.sub}  --suffix {params.suffix} --dataname {wildcards.dataset} --num_perms {params.num_perms}  1>> {log.out} 2>> {log.err}
     """

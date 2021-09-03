@@ -113,7 +113,17 @@ def main():
   args = get_args()
   outpath = "scripts/output/rijk_zscore/"
 
-  df = pd.read_parquet(args.parquet,columns=["juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","splice_ann","tissue","compartment","free_annotation","refName_newR1","called","chrR1A","exon_annR1A","exon_annR1B","strand"])
+  required_columns = ["juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","refName_newR1","chrR1A"]
+  try:
+    df = pd.read_parquet(args.parquet,columns=["juncPosR1A","geneR1A_uniq","juncPosR1B","numReads","cell","splice_ann","tissue","compartment","free_annotation","refName_newR1","called","chrR1A","exon_annR1A","exon_annR1B","strand"])
+  except:
+    df = pd.read_parquet(args.parquet)
+
+  for rc in required_columns:
+    if rc not in df.columns:
+      raise RuntimeError("required column '{}' is missing".format(rc))
+
+  
 
   df["refName"] = df["chrR1A"] + "_" + df["geneR1A_uniq"] + "_" + df["juncPosR1A"].astype(str) + "_" + df["juncPosR1B"].astype(str)
   if "splice_ann" not in df.columns:
@@ -396,7 +406,9 @@ def main():
 #  df.drop(["denom_sq","num_ann","num_unann","num","temp","temp_mag"],axis=1,inplace=True)
 #  df.drop(["negz_B_unann","negz_B_ann","negz_B","denom_sq","num_ann","num_unann","num","temp","temp_mag"],axis=1,inplace=True)
 
-  df["ontology"] = df["tissue"] + df["compartment"] + df["free_annotation"]
+  
+  if ("tissue" in df.columns) and ("compartment" in df.columns) and ("free_annotation" in df.columns):
+    df["ontology"] = df["tissue"] + df["compartment"] + df["free_annotation"]
   
 #  df["ontology_gene"] = df["ontology"] + df["geneR1A_uniq"]
   suff = ""
